@@ -5,7 +5,7 @@ The idea came from the iSpindel project : https://github.com/universam1/iSpindel
 
 ## Bill of materials
 - Micro controller : WeMos D1 Mini
-- Accelerometer : GY-521
+- Accelerometer : MPU-6050
 - Temp sensor : DS18B20
 - Batterie charger : TP4056
 - Batterie : Panasonic 18650
