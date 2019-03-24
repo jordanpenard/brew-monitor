@@ -1,1 +1,9 @@
 .DS_Store
+
+# Pycharm files
+.idea
+venv
+
+# Python compiled objects
+__pycache__
+*.py[cod]
