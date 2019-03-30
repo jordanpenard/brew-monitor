@@ -7,6 +7,3 @@ Software running on the micro controller
 
 ## Arduino libraries
 - Wire
-- OneWire
-- DallasTemperature
-
