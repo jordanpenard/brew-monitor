@@ -6,8 +6,6 @@
 
 #include <ESP8266WiFi.h>
 #include <Wire.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
 
 #include "config.h"
   
