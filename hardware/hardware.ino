@@ -43,7 +43,7 @@ void connect_to_wifi() {
   //Serial.println(WiFi.localIP());
 }
 
-void http_get_request(const char* hostname, uint16_t port, String request) {
+void http_post_request(const char* hostname, uint16_t port, String request, String data) {
   WiFiClient client;
 
   Serial.print(String("[Connecting to ") + hostname + String(" ... "));
@@ -62,11 +62,13 @@ void http_get_request(const char* hostname, uint16_t port, String request) {
   
   Serial.println("connected]");
   Serial.println("[Sending a request]");
-  client.print("GET /" + request + " HTTP/1.1\r\n" +
+  
+  client.print("POST /" + request + " HTTP/1.1\r\n" +
                "Host: " + hostname + "\r\n" +
-               "Connection: close\r\n" +
-               "\r\n");
-  /*    
+               "Content-Type: application/json\r\n" +
+               "Content-Length: " + data.length() + "\r\n" +
+               "\r\n" + data);
+  /*
   Serial.println("[Response:]");
   while (client.connected() || client.available())
   {
@@ -75,7 +77,8 @@ void http_get_request(const char* hostname, uint16_t port, String request) {
       String line = client.readStringUntil('\n');
       Serial.println(line);
     }
-  }*/
+  }
+  */
   client.stop();
   Serial.println("[Disconnected]");
 }
@@ -163,6 +166,9 @@ void loop() {
 
   // Average the temp values
   Temp = Temp/NB_MEASURE;
+
+  // Read battery level
+  float battery = analogRead(A0) * (3.3 / 1023.0) * 2;
   
   //Serial.println("MPU-6050 :");
   //Serial.print(" X = "); Serial.println(X);
@@ -170,11 +176,15 @@ void loop() {
   //Serial.print(" Z = "); Serial.println(Z);
   Serial.print(" Tilt = "); Serial.println(Tilt);
   Serial.print(" Temp = "); Serial.println(Temp);
+  Serial.print(" Battery = "); Serial.println(battery);
 
   connect_to_wifi();
 
-  http_get_request(SERVER, PORT, String("submitTemperature?value=") + Tilt + String("&sensorID=10"));
-  http_get_request(SERVER, PORT, String("submitTemperature?value=") + Temp + String("&sensorID=11"));
+  http_post_request(SERVER, PORT, String("storage/sensor/add_data"), 
+          String("{\"sensor_id\": ") + SENSOR_ID + 
+          String(", \"angle\": \"") + Tilt + 
+          String("\", \"temperature\": \"") + Temp + 
+          String("\", \"battery\": ") + (int)(battery*100) + String("}"));
 
   // Sleep for 10 min
   ESP.deepSleep(60000000*10); 
