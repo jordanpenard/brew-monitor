@@ -14,13 +14,15 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
 
+  Serial.print("Hello");
+  
   Wire.begin(MPU_SCL, MPU_SDA);
 }
 
 void connect_to_wifi() {
   
-  Serial.println();
-  Serial.print("Connecting to WIFI");
+  //Serial.println();
+  //Serial.print("Connecting to WIFI");
   
   // Connecting to a WiFi network
   WiFi.begin(SSID, PASSWORD);
@@ -29,7 +31,7 @@ void connect_to_wifi() {
     static int i = 0;
 
     delay(500);
-    Serial.print(".");
+    //Serial.print(".");
 
     // If the connection takes too long, reset the board
     if (i > 20)
@@ -38,7 +40,7 @@ void connect_to_wifi() {
       i++;
   }
 
-  Serial.println(" connected");  
+  //Serial.println(" connected");  
   //Serial.print("IP address: ");
   //Serial.println(WiFi.localIP());
 }
@@ -46,7 +48,7 @@ void connect_to_wifi() {
 void http_post_request(const char* hostname, uint16_t port, String request, String data) {
   WiFiClient client;
 
-  Serial.print(String("[Connecting to ") + hostname + String(" ... "));
+  //Serial.print(String("[Connecting to ") + hostname + String(" ... "));
   while (!client.connect(hostname, port)) {
     static int i = 0;
     
@@ -60,8 +62,8 @@ void http_post_request(const char* hostname, uint16_t port, String request, Stri
       i++;
   }
   
-  Serial.println("connected]");
-  Serial.println("[Sending a request]");
+  //Serial.println("connected]");
+  //Serial.println("[Sending a request]");
   
   client.print("POST /" + request + " HTTP/1.1\r\n" +
                "Host: " + hostname + "\r\n" +
@@ -80,7 +82,7 @@ void http_post_request(const char* hostname, uint16_t port, String request, Stri
   }
   */
   client.stop();
-  Serial.println("[Disconnected]");
+  //Serial.println("[Disconnected]");
 }
 
 float filter(float data[NB_MEASURE]) {
@@ -105,19 +107,8 @@ float filter(float data[NB_MEASURE]) {
       count++;
     }    
   }
-
-  float ret = out/count;
-
-  if (ret > 1.0 || ret < -1.0) {
-    Serial.println("---");
-    Serial.println(String("High measurment : ") + ret);
-    for(int i = 0; i < NB_MEASURE; i++) {
-      Serial.println(data[i]);
-    }
-    Serial.println("---");
-  }
   
-  return ret;
+  return out/count;
 }
 
 void loop() {
@@ -174,9 +165,9 @@ void loop() {
   //Serial.print(" X = "); Serial.println(X);
   //Serial.print(" Y = "); Serial.println(Y);
   //Serial.print(" Z = "); Serial.println(Z);
-  Serial.print(" Tilt = "); Serial.println(Tilt);
-  Serial.print(" Temp = "); Serial.println(Temp);
-  Serial.print(" Battery = "); Serial.println(battery);
+  //Serial.print(" Tilt = "); Serial.println(Tilt);
+  //Serial.print(" Temp = "); Serial.println(Temp);
+  //Serial.print(" Battery = "); Serial.println(battery);
 
   connect_to_wifi();
 
@@ -184,7 +175,7 @@ void loop() {
           String("{\"sensor_id\": ") + SENSOR_ID + 
           String(", \"angle\": \"") + Tilt + 
           String("\", \"temperature\": \"") + Temp + 
-          String("\", \"battery\": ") + (int)(battery*100) + String("}"));
+          String("\", \"battery\": \"") + battery + String("\"}"));
 
   // Sleep for 10 min
   ESP.deepSleep(60000000*10); 
