@@ -1,9 +1,20 @@
-import json
-from typing import Optional, Iterable, Tuple
+from http import HTTPStatus
+from typing import Optional, Iterable, Tuple, TYPE_CHECKING, List
 
 import attr
-from flask import Response
+from flask import Response, current_app
 from flask_csv import send_csv
+
+from brewmonitor import json
+
+if TYPE_CHECKING:
+    from brewmonitor.storage.access import DataPoints
+    from brewmonitor.configuration import Configuration
+
+
+def config():
+    # type: () -> Configuration
+    return current_app.config['brewmonitor config']
 
 
 def json_response(content, status=200, headers=None):
@@ -30,15 +41,15 @@ def make_csv(data, filename):
     return send_csv(entries, filename, headers)
 
 
-def export_data(filename, format, data):
-    # type: (str, str, List[access.DataPoints]) -> Response
+def export_data(filename, _format, data):
+    # type: (str, str, List[DataPoints]) -> Response
 
-    if format == 'json':
-        output = json.dumps([attr.asdict(d) for d in data])
+    if _format == 'json':
+        output = [attr.asdict(d) for d in data]
         return json_response(output, headers=(
             ('Content-Disposition', f'attachment; filename={filename}'),
         ))
-    elif format == 'csv':
+    elif _format == 'csv':
         return make_csv(data, filename)
 
-    return Response('Invalid format', 400)
+    return Response('Invalid format', HTTPStatus.BAD_REQUEST)

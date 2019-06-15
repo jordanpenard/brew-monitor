@@ -1,4 +1,5 @@
 from datetime import datetime
+from http import HTTPStatus
 
 import attr
 from flask import Blueprint, request
@@ -27,7 +28,7 @@ def add_data():
     json_args = request.get_json()
     print (f'Received json_args={json_args}')
     if 'timestamp' not in json_args:
-        json_args['timestamp'] = datetime.now().timestamp()
+        json_args['timestamp'] = datetime.now()
 
     try:
         d = DataPoints(
@@ -35,20 +36,20 @@ def add_data():
             **json_args
         )
     except Exception as e:
-        return json_response({"errors": [f"Failed to construct datapoint: {e}"]}, 400)
+        return json_response({"errors": [f"Failed to construct datapoint: {e}"]}, HTTPStatus.BAD_REQUEST)
 
     sensor, project = get_active_project_for_sensor(d.sensor_id)
     if sensor is None:
-        return json_response({"errors": [f"Did not find the sensor {d.sensor_id!r}"]}, 404)
+        return json_response({"errors": [f"Did not find the sensor {d.sensor_id!r}"]}, HTTPStatus.NOT_FOUND)
 
     if project is not None:
         d.project_id = project.id
 
-    insert_datapoints(d)
+    insert_datapoints([d])
 
     return json_response(
         {"created": [attr.asdict(d)]},
         headers=[
-            ('project_id', project.id),
+            ('project_id', project.id if project else None),
         ],
     )

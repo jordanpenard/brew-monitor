@@ -7,3 +7,5 @@ venv
 # Python compiled objects
 __pycache__
 *.py[cod]
+
+.storage/
