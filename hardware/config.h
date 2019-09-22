@@ -17,3 +17,7 @@
 
 // Number of measurment taken from the sensor for averaging
 #define NB_MEASURE 10
+
+// Sleep time : 10min
+#define SLEEP_TIME 60000000*10
+

@@ -14,16 +14,21 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
 
-  Serial.print("Hello");
+  Serial.println("Hello");
   
-  Wire.begin(MPU_SCL, MPU_SDA);
+  Wire.begin(MPU_SDA, MPU_SCL);
 }
 
 void connect_to_wifi() {
   
   //Serial.println();
-  //Serial.print("Connecting to WIFI");
-  
+  //Serial.print("Connecting to WIFI ");
+  //Serial.print(SSID);
+
+  // Initialisation
+  WiFi.persistent(false);
+  WiFi.disconnect(true);
+
   // Connecting to a WiFi network
   WiFi.begin(SSID, PASSWORD);
 
@@ -35,7 +40,8 @@ void connect_to_wifi() {
 
     // If the connection takes too long, reset the board
     if (i > 20)
-      ESP.restart();
+      // Sleep
+      ESP.deepSleep(SLEEP_TIME); 
     else
       i++;
   }
@@ -52,12 +58,13 @@ void http_post_request(const char* hostname, uint16_t port, String request, Stri
   while (!client.connect(hostname, port)) {
     static int i = 0;
     
-    Serial.println(String("connection failed, try ") + i + String("]"));
+    //Serial.println(String("connection failed, try ") + i + String("]"));
     delay(500);
 
     // If the connection takes too long, reset the board
     if (i > 20)
-      ESP.restart();
+      // Sleep
+      ESP.deepSleep(SLEEP_TIME); 
     else
       i++;
   }
@@ -177,6 +184,6 @@ void loop() {
           String("\", \"temperature\": \"") + Temp + 
           String("\", \"battery\": \"") + battery + String("\"}"));
 
-  // Sleep for 10 min
-  ESP.deepSleep(60000000*10); 
+  // Sleep
+  ESP.deepSleep(SLEEP_TIME); 
 }

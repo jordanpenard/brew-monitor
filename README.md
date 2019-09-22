@@ -14,4 +14,5 @@ The idea came from the iSpindel project : https://github.com/universam1/iSpindel
 - SCL of the MPU connect to D3 pin of D1 mini
 - SDA of the MPU connect to D4 pin of D1 mini
 - VCC and GND pins of D1 mini and MPU connects to the batterie via a switch
+- 2 100k reistors in series connected between VCC and GND, with the mid point connected to A0 pin of D1 mini
 - TP4056 directly connects to the batterie
