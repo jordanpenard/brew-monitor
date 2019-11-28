@@ -14,19 +14,26 @@ Use the provided _requirements.txt_ file to setup your python environment.
 
 # Running a debug setup
 
-**From the _front_end_ folder**
+**From the _website_ folder**
+
+Create a python virtual env with the required libraries :
+```
+python3.7 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
 Create the scratch folder where the debug db will be stored and optionally create dummy data:
 ```
-$> mkdir storage
-$> python3 python/make_dummy_data.py
+mkdir storage
+python python/make_dummy_data.py
 ```
 
 The location of the DB can be changed in _debug_config.yaml_.
 
-Start the flask debug server (from the _front_end_ folder):
+Start the flask debug server (from the _website_ folder):
 ```
-$> python3 python/run_server
+python python/run_server
 ```
 
 By default it will run on [http://localhost:5000/]()
