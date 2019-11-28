@@ -1,1 +1,1 @@
-sqlite file: '.storage/debug_flask.db'
+sqlite file: './storage/debug_flask.db'
