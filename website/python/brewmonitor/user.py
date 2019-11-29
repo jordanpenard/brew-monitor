@@ -1,4 +1,5 @@
 from flask_login import UserMixin
+from brewmonitor.utils import config
 
 class User(UserMixin):
     def __init__(self, id):
@@ -14,10 +15,40 @@ class User(UserMixin):
         return True
 
     def verify(username, password):
-        if username == "toto" and password == "pass":
-            return 1
-        else:
-            return 0
+        with config().db_connection() as db_conn:
+            data = db_conn.execute(
+                '''
+                select id
+                from User
+                where username = ? and password = ?;
+                ''',
+                (username, password)
+            ).fetchone()            
+            if data is None:
+                return 0
+            else:
+                return data[0]
     
     def get_name(self):
-        return "toto"
+        with config().db_connection() as db_conn:
+            data = db_conn.execute(
+                '''
+                select username
+                from User
+                where id = ?;
+                ''',
+                (self.id)
+            )
+            return data.fetchone()[0]
+
+    def is_admin(self):
+        with config().db_connection() as db_conn:
+            data = db_conn.execute(
+                '''
+                select is_admin
+                from User
+                where id = ?;
+                ''',
+                (self.id)
+            )
+            return data.fetchone()[0]
