@@ -19,14 +19,20 @@ with config.db_connection() as conn:
 
     conn.execute(
         '''
-        insert into Sensor (name)
-        values ('green sensor'), ('brown sensor'), ('sad sensor');
+        insert into User (username, password, is_admin)
+        values ('toto', 'pass', true), ('titi', 'pass', false);
         '''
     )
     conn.execute(
         '''
-        insert into Project (name, active_sensor)
-        values ('Brown Ale #12', 1), ('Super IPA', 2), ('Sad project', null);
+        insert into Sensor (name, secret, owner)
+        values ('green sensor', 'secret', 1), ('brown sensor', 'secret', 1), ('sad sensor', 'secret', 1);
+        '''
+    )
+    conn.execute(
+        '''
+        insert into Project (name, active_sensor, owner)
+        values ('Brown Ale #12', 1, 1), ('Super IPA', 2, 1), ('Sad project', null, 1);
         '''
     )
 

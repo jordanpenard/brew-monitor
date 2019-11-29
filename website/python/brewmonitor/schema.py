@@ -13,19 +13,35 @@ def initialise_db(config):
     with config.db_connection() as conn:
         conn.execute(
             '''
-            create table if not exists Sensor (
+            create table if not exists User (
                 id integer primary key autoincrement,
-                name text not null
+                is_admin bool,
+                username text not null,
+                password text not null
             );
             '''
         )
 
         conn.execute(
             '''
+            create table if not exists Sensor (
+                id integer primary key autoincrement,
+                name text not null,
+                secret text not null,
+                owner integer not null,
+                foreign key(owner) references User(id)
+            );
+            '''
+        )
+    
+        conn.execute(
+            '''
             create table if not exists Project (
                 id integer primary key autoincrement,
                 name text not null,
                 active_sensor integer,
+                owner integer not null,
+                foreign key(owner) references User(id),
                 foreign key(active_sensor) references Sensor(id)
             ); 
             '''
