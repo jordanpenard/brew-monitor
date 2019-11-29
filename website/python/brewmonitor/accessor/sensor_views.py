@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from flask import url_for, request, redirect
 from flask_mako import render_template
+from flask_login import login_required
 from werkzeug.exceptions import abort
 
 from brewmonitor.accessor._app import accessor_bp
@@ -100,6 +101,7 @@ def get_sensor_data(sensor_id, out_format):
 
 
 @accessor_bp.route('/sensor/add', methods=['POST'])
+@login_required
 def add_sensor():
 
     sensor_id = access.insert_sensor(request.form['name'])
