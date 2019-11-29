@@ -8,6 +8,9 @@ from brewmonitor.configuration import Configuration
 from brewmonitor.schema import initialise_db
 from brewmonitor.storage.views import storage_bp
 from brewmonitor.views import home_bp
+from brewmonitor.user import User
+
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user 
 
 
 def make_app(secret_key):
@@ -31,5 +34,13 @@ def make_app(secret_key):
     brewmonitor.register_blueprint(home_bp)
     brewmonitor.register_blueprint(accessor_bp)
     brewmonitor.register_blueprint(storage_bp)
+    
+    login_manager = LoginManager()
+    login_manager.login_view = 'home.login'
+    login_manager.init_app(brewmonitor)
 
+    @login_manager.user_loader
+    def load_user(id):
+    	return User(id)
+    
     return brewmonitor
