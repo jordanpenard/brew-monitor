@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from flask import abort, url_for, request, redirect
+from flask_login import login_required
 from flask_mako import render_template
 
 from brewmonitor.accessor._app import accessor_bp
@@ -112,6 +113,7 @@ def get_project_data(project_id, out_format):
 
 
 @accessor_bp.route('/project/add', methods=['POST'])
+@login_required
 def add_project():
 
     project_id = access.insert_project(request.form['name'])
@@ -119,6 +121,7 @@ def add_project():
 
 
 @accessor_bp.route('/project/<project_id>/change_sensor', methods=['POST'])
+@login_required
 def change_project_sensor(project_id):
 
     sensor_id = request.form.get('sensor_id', 'null')  # If null we only detach the sensor
@@ -140,6 +143,7 @@ def change_project_sensor(project_id):
 
 
 @accessor_bp.route('/datapoint/remove/<datapoint_id>', methods=['POST'])
+@login_required
 def remove_datapoint(datapoint_id):
 
     next = request.args.get('next') or url_for('accessor.all_projects')
