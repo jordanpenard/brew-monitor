@@ -67,15 +67,29 @@
                         <li class="nav-item" id="accessor_sensor_nav_item">
                             <a class="nav-link" href="${url_for('accessor.all_sensors')}">Sensor List</a>
                         </li>
+    		            % if current_user.is_authenticated:
                         <li class="nav-item" id="user_nav_item">
-                            <a class="nav-link" href="#">User Management (pending)</a>
+                            <a class="nav-link" href="#">User Management</a>
                         </li>
+    		            % endif
                     </ul>
+                    % if not current_user.is_authenticated:
                     <ul class="nav navbar-nav navbar-right">
-                        <li class="nav-item" id="accessor_project_nav_item">
-                            <a href="" class="nav-link" data-toggle="modal" data-target="#modalLoginForm">Login</a>
+                        <li class="nav-item" id="login_nav_item">
+                            <a class="nav-link" href="${url_for('home.login')}">Login</a>
                         </li>
                     </ul>
+    		    % endif
+    		    % if current_user.is_authenticated:
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="nav-item" id="username_nav_item">
+                            <a class="nav-link" href="#">${current_user.get_name()}</a>
+                        </li>
+                        <li class="nav-item" id="logout_nav_item">
+                            <a class="nav-link" href="${url_for('home.logout')}">Logout</a>
+                        </li>
+                    </ul>
+    		    % endif
                 </div>
 
             </nav>
@@ -89,38 +103,6 @@
     
         ${next.body()}
     </main>
-
-    <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-	<div class="modal-content">
-	  <form>
-	    <div class="modal-header text-center">
-              <h4 class="modal-title w-100 font-weight-bold">Sign in</h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-        	<span aria-hidden="true">&times;</span>
-              </button>
-	    </div>
-	    <div class="modal-body mx-3">
-              <div class="form-group">
-        	<label for="username">Username</label>
-        	<input type="text" class="form-control" id="username" placeholder="Username">
-              </div>
-              <div class="form-group">
-        	<label for="password">Password</label>
-        	<input type="password" class="form-control" id="password" placeholder="Password">
-              </div>
-              <div class="form-check">
-        	<input type="checkbox" class="form-check-input" id="remember_me">
-        	<label class="form-check-label" for="remember_me">Remember me</label>
-              </div>
-	    </div>
-	    <div class="modal-footer d-flex justify-content-center">
-              <button type="submit" class="btn btn-primary">Sign in</button>
-	    </div>
-	  </form>
-	</div>
-      </div>
-    </div>
 
     <div class="footer">
         <%block name="footer">
