@@ -1,4 +1,5 @@
 import os
+import bcrypt
 from datetime import datetime, timedelta
 
 from brewmonitor.schema import initialise_db
@@ -17,11 +18,18 @@ initialise_db(config)
 
 with config.db_connection() as conn:
 
+    password = b'pass'
+    salt1 = bcrypt.gensalt()
+    salt2 = bcrypt.gensalt()
+    hashed_password1 = bcrypt.hashpw(password, salt1)
+    hashed_password2 = bcrypt.hashpw(password, salt2)
+
     conn.execute(
         '''
         insert into User (username, password, is_admin)
-        values ('toto', 'pass', true), ('titi', 'pass', false);
-        '''
+        values ('toto', ?, true), ('titi', ?, false);
+        ''',
+        (hashed_password1, hashed_password2)
     )
     conn.execute(
         '''
