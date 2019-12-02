@@ -16,7 +16,21 @@ class User(UserMixin):
             ).fetchone()
             self.name = data[0]
             self.is_admin = data[1]
-
+    
+    def get_users():
+        with config().db_connection() as db_conn:
+            data = db_conn.execute(
+                '''
+                select id, username, is_admin
+                from User;
+                '''
+            ).fetchall()
+            
+            def index_to_name(n):
+                return {'id':n[0],'username':n[1],'is_admin':n[2]}
+                
+            return map(index_to_name, data)
+        
     def is_active(self):
         return True
 

@@ -1,7 +1,7 @@
 from flask import Blueprint, url_for, request, redirect
 from flask_mako import render_template
 
-from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user 
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from brewmonitor.user import User
 
 home_bp = Blueprint(
@@ -41,3 +41,11 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('home.index'))
+
+@home_bp.route('/admin/users')
+@login_required
+def admin_users():
+    if not current_user.is_admin:
+        return redirect(url_for('home.index'))
+    else:
+        return render_template('admin_users.html.mako', users = User.get_users())
