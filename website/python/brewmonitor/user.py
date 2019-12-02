@@ -1,3 +1,4 @@
+import bcrypt
 from flask_login import UserMixin
 from brewmonitor.utils import config
 
@@ -18,16 +19,19 @@ class User(UserMixin):
         with config().db_connection() as db_conn:
             data = db_conn.execute(
                 '''
-                select id
+                select id, password
                 from User
-                where username = ? and password = ?;
+                where username = ?;
                 ''',
-                (username, password)
-            ).fetchone()            
-            if data is None:
-                return 0
-            else:
-                return data[0]
+                (username,)
+            ).fetchone()
+
+            if data is not None:
+                id = data[0]
+                hashed_password = data[1]
+                if bcrypt.checkpw(password.encode('utf8'), hashed_password) is True:
+                    return User(id)
+        return None
     
     def get_name(self):
         with config().db_connection() as db_conn:
