@@ -67,7 +67,7 @@
                         <li class="nav-item" id="accessor_sensor_nav_item">
                             <a class="nav-link" href="${url_for('accessor.all_sensors')}">Sensor List</a>
                         </li>
-    		            % if current_user.is_authenticated and current_user.is_admin():
+    		            % if current_user.is_authenticated and current_user.is_admin:
                         <li class="nav-item" id="user_nav_item">
                             <a class="nav-link" href="#">User Management</a>
                         </li>
@@ -83,7 +83,7 @@
     		    % if current_user.is_authenticated:
                     <ul class="nav navbar-nav navbar-right">
                         <li class="nav-item" id="username_nav_item">
-                            <a class="nav-link" href="#">${current_user.get_name()}</a>
+                            <a class="nav-link" href="#">${current_user.name}</a>
                         </li>
                         <li class="nav-item" id="logout_nav_item">
                             <a class="nav-link" href="${url_for('home.logout')}">Logout</a>

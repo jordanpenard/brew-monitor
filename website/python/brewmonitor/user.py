@@ -5,6 +5,17 @@ from brewmonitor.utils import config
 class User(UserMixin):
     def __init__(self, id):
         self.id = id
+        with config().db_connection() as db_conn:
+            data = db_conn.execute(
+                '''
+                select username, is_admin
+                from User
+                where id = ?;
+                ''',
+                (id,)
+            ).fetchone()
+            self.name = data[0]
+            self.is_admin = data[1]
 
     def is_active(self):
         return True
@@ -32,27 +43,3 @@ class User(UserMixin):
                 if bcrypt.checkpw(password.encode('utf8'), hashed_password) is True:
                     return User(id)
         return None
-    
-    def get_name(self):
-        with config().db_connection() as db_conn:
-            data = db_conn.execute(
-                '''
-                select username
-                from User
-                where id = ?;
-                ''',
-                (self.id)
-            )
-            return data.fetchone()[0]
-
-    def is_admin(self):
-        with config().db_connection() as db_conn:
-            data = db_conn.execute(
-                '''
-                select is_admin
-                from User
-                where id = ?;
-                ''',
-                (self.id)
-            )
-            return data.fetchone()[0]
