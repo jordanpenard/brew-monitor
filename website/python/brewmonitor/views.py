@@ -29,8 +29,8 @@ def login():
         remember = True if request.form.get('remember') else False
         
         id = User.verify(username, password)
-        if id != 0:
-            login_user(User(id), remember=remember)
+        if id is not None:
+            login_user(id, remember=remember)
             return redirect(url_for('home.index'))
 
         # if the above check passes, then we know the user has the right credentials
