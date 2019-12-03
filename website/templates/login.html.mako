@@ -11,7 +11,7 @@
 <div class="column is-4 is-offset-4">
     <h3 class="title">Login</h3>
     <div class="box">
-        <form method="POST" action="${url_for('home.login')}">
+        <form method="POST" action="${url_for('home.check_login')}">
             <div class="field">
                 <div class="control">
                     <input class="input is-large" type="text" name="username" placeholder="Username" autofocus="">
