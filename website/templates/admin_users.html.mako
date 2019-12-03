@@ -9,7 +9,6 @@
 
 <%block name="title">
     <h1 class="title">Admin users</h1>
-    <br>
 </%block>
 
 <div class="column is-4 is-offset-4">
