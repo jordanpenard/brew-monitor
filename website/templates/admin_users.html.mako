@@ -31,13 +31,13 @@
                     checked
                     % endif
                 ></td>
-                <td><a 
+                <td><a href="${url_for('home.delete_user', id=user['id'])}" 
                     % if user['id'] == current_user.id:
-                        class="btn btn-primary btn-sm disabled"
+                        class="btn btn-danger disabled"
                     % else:
-                        class="btn btn-primary btn-sm"
+                        class="btn btn-danger"
                     % endif
-                href="${url_for('home.delete_user', id=user['id'])}">Delete</a></td>
+                ><i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i></a></td>
             </tr>
             % endfor
             <tr><form action="${url_for('home.add_user')}" method="post">
@@ -45,7 +45,9 @@
                 <td><input class="form-control" type="text" name="username"></td>
                 <td><input class="form-control" type="password" name="password"></td>
                 <td><input type="checkbox" name="is_admin"></td>
-                <td><input class="btn btn-primary btn-sm" type="submit" value="Add"></td>
+                <td><button class="btn btn-success" type="submit">
+                    <i class="fas fa-plus-circle" aria-hidden="true"></i>
+                </button></td>
             </form></tr>
         </table>
     </div>

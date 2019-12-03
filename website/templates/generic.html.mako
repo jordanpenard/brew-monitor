@@ -85,7 +85,7 @@
     		    % if current_user.is_authenticated:
                     <ul class="nav navbar-nav navbar-right">
                         <li class="nav-item" id="username_nav_item">
-                            <a class="nav-link" href="#">${current_user.name}</a>
+                            <a class="nav-link disabled">${current_user.name}</a>
                         </li>
     		            % if current_user.is_admin:
                         <li class="nav-item dropdown" id="admin_nav_item">
