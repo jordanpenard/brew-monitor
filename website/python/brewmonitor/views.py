@@ -47,7 +47,7 @@ def admin_users():
     if not current_user.is_admin:
         return redirect(url_for('home.index'))
     else:
-        return render_template('admin_users.html.mako', users = User.get_users())
+        return render_template('admin_users.html.mako', users=User.get_users())
 
 @home_bp.route('/admin/users/add', methods=['POST'])
 @login_required
