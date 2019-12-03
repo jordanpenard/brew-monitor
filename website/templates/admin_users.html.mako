@@ -2,15 +2,17 @@
     import json
 %>
 <%inherit file="generic.html.mako" />
-<%namespace name="generic" file="generic.html.mako" />
 
 <%block name="head_title">
     <title>Brew Monitor - Admin users</title>
 </%block>
 
-<div class="column is-4 is-offset-4">
-    <h3 class="title">Admin users</h3>
+<%block name="title">
+    <h1 class="title">Admin users</h1>
     <br>
+</%block>
+
+<div class="column is-4 is-offset-4">
     <div class="box">
         <table class="table" id="user_table">
             <thead><tr>
