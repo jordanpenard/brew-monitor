@@ -25,7 +25,7 @@ def login():
 def check_login():
     username = request.form.get('username')
     password = request.form.get('password')
-    remember = True if request.form.get('remember') else False
+    remember = bool(request.form.get('remember'))
         
     id = User.verify(username, password)
     if id is not None:
