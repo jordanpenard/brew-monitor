@@ -49,3 +49,24 @@ def admin_users():
         return redirect(url_for('home.index'))
     else:
         return render_template('admin_users.html.mako', users = User.get_users())
+
+@home_bp.route('/admin/users/add', methods=['POST'])
+@login_required
+def add_user():
+    if not current_user.is_admin:
+        return redirect(url_for('home.index'))
+    else:
+        username = request.form.get('username')
+        password = request.form.get('password')
+        is_admin = True if request.form.get('is_admin') else False
+        User.add(username, password, is_admin)
+        return redirect(url_for('home.admin_users'))
+
+@home_bp.route('/admin/users/delete/<id>')
+@login_required
+def delete_user(id):
+    if not current_user.is_admin:
+        return redirect(url_for('home.index'))
+    else:
+        User.delete(id)
+        return redirect(url_for('home.admin_users'))
