@@ -50,6 +50,10 @@
             #user_table tr td {
                 vertical-align: middle;
             }
+            h1 {
+                margin-top: 30px;
+                margin-bottom: 30px;
+            }
         </style>
     </%block>
 </head>
