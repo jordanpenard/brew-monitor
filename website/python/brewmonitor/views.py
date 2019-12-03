@@ -17,24 +17,23 @@ def index():
         'home.html.mako'
     )
 
-@home_bp.route('/login', methods=['GET', 'POST'])
+@home_bp.route('/login', methods=['GET'])
 def login():
-        
-    if request.method == 'GET':
-        return render_template('login.html.mako')
+    return render_template('login.html.mako')
 
-    else:
-        username = request.form.get('username')
-        password = request.form.get('password')
-        remember = True if request.form.get('remember') else False
+@home_bp.route('/login', methods=['POST'])
+def check_login():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    remember = True if request.form.get('remember') else False
         
-        id = User.verify(username, password)
-        if id is not None:
-            login_user(id, remember=remember)
-            return redirect(url_for('home.index'))
+    id = User.verify(username, password)
+    if id is not None:
+        login_user(id, remember=remember)
+        return redirect(url_for('home.index'))
 
-        # if the above check passes, then we know the user has the right credentials
-        return redirect(url_for('home.login')) # if user doesn't exist or password is wrong, reload the page
+    # if the above check passes, then we know the user has the right credentials
+    return redirect(url_for('home.login')) # if user doesn't exist or password is wrong, reload the page
 
 @home_bp.route('/logout')
 @login_required
