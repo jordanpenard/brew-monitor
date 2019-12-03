@@ -12,7 +12,7 @@
     <h3 class="title">Admin users</h3>
     <br>
     <div class="box">
-        <table class="table">
+        <table class="table" id="user_table">
             <thead><tr>
                 <th scope="col">ID</th>
                 <th scope="col">Username</th>
@@ -30,16 +30,22 @@
                     checked
                     % endif
                 ></td>
-                <td><input type="button" value="Delete"></td>
+                <td><a 
+                    % if user['id'] == current_user.id:
+                        class="btn btn-primary btn-sm disabled"
+                    % else:
+                        class="btn btn-primary btn-sm"
+                    % endif
+                href="${url_for('home.delete_user', id=user['id'])}">Delete</a></td>
             </tr>
             % endfor
-            <tr>
+            <tr><form action="${url_for('home.add_user')}" method="post">
                 <td></td>
-                <td><input type="text" name="username"></td>
-                <td><input type="text" name="password"></td>
+                <td><input class="form-control" type="text" name="username"></td>
+                <td><input class="form-control" type="password" name="password"></td>
                 <td><input type="checkbox" name="is_admin"></td>
-                <td><input type="submit" value="Add"></td>
-            </tr>
+                <td><input class="btn btn-primary btn-sm" type="submit" value="Add"></td>
+            </form></tr>
         </table>
     </div>
 </div>

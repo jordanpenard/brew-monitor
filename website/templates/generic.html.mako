@@ -47,6 +47,9 @@
             .nav-item.active a {
                 text-decoration: underline;
             }
+            #user_table tr td {
+                vertical-align: middle;
+            }
         </style>
     </%block>
 </head>

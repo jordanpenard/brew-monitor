@@ -30,7 +30,29 @@ class User(UserMixin):
                 return {'id':n[0],'username':n[1],'is_admin':n[2]}
                 
             return map(index_to_name, data)
-        
+
+    def add(username, password, is_admin):
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password.encode('utf8'), salt)
+        with config().db_connection() as db_conn:
+            db_conn.execute(
+                '''
+                insert into User (username, password, is_admin)
+                values (?, ?, ?);
+                ''',
+                (username, hashed_password, is_admin)
+            )
+
+    def delete(id):
+        with config().db_connection() as db_conn:
+            db_conn.execute(
+                '''
+                delete from User
+                where id = ?;
+                ''',
+                (id,)
+            )
+
     def is_active(self):
         return True
 
