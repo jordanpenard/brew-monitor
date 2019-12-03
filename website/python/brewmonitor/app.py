@@ -41,6 +41,6 @@ def make_app(secret_key):
 
     @login_manager.user_loader
     def load_user(id):
-    	return User(id)
+    	return User(int(id))
     
     return brewmonitor
