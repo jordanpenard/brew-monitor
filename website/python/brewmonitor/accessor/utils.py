@@ -2,6 +2,7 @@ from typing import List, Dict, TYPE_CHECKING, Optional
 
 from flask_mako import render_template
 from flask import url_for, Response
+from flask_login import current_user
 
 
 if TYPE_CHECKING:
@@ -108,5 +109,5 @@ def view_element(
         linked_class='sensor' if elem_class == 'project' else 'project',
         management_link=management_link,
         management_items=management_items,
-        allow_delete_datapoints=delete_next is not None
+        allow_delete_datapoints=current_user.is_authenticated
     )
