@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from flask import url_for, request, redirect
 from flask_mako import render_template
-from flask_login import login_required
+from flask_login import login_required, current_user
 from werkzeug.exceptions import abort
 
 from brewmonitor.accessor._app import accessor_bp
@@ -20,17 +20,20 @@ def all_sensors():
         sensor.as_link()
         for sensor in sensors
     ]
-
-    return render_template(
-        'accessor/home.html.mako',
-        elem_class='sensor',
-        elem_links=elem_links,
+    management_link = None
+    if current_user.is_authenticated:
         management_link={
             'link': url_for('accessor.add_sensor'),
             'label': 'New sensor',
             'btn_class': 'btn-success',  # green
             'icon_classes': 'fas fa-plus-circle',
         },
+
+    return render_template(
+        'accessor/home.html.mako',
+        elem_class='sensor',
+        elem_links=elem_links,
+        management_link=management_link,
     )
 
 

@@ -1,6 +1,3 @@
-<%!
-    import json
-%>
 <%inherit file="generic.html.mako" />
 <%namespace name="generic" file="generic.html.mako" />
 

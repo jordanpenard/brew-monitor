@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from flask import abort, url_for, request, redirect
-from flask_login import login_required
+from flask_login import login_required, current_user
 from flask_mako import render_template
 
 from brewmonitor.accessor._app import accessor_bp
@@ -18,17 +18,20 @@ def all_projects():
         project.as_link()
         for project in projects
     ]
+    management_link = None
+    if current_user.is_authenticated:
+        management_link = {
+            'link': url_for('accessor.add_project'),
+            'label': 'New project',
+            'btn_class': 'btn-success',  # green
+            'icon_classes': 'fas fa-plus-circle',
+        }
 
     return render_template(
         'accessor/home.html.mako',
         elem_class='project',
         elem_links=elem_links,
-        management_link={
-            'link': url_for('accessor.add_project'),
-            'label': 'New project',
-            'btn_class': 'btn-success',  # green
-            'icon_classes': 'fas fa-plus-circle',
-        },
+        management_link=management_link,
     )
 
 
