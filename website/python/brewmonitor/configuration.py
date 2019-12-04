@@ -1,9 +1,9 @@
 import yaml
-import pysqlite3
+import sqlite3
 from typing import Dict, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    SQLConnection = pysqlite3.Connection
+    SQLConnection = sqlite3.Connection
 
 
 class Configuration:
@@ -24,7 +24,7 @@ class Configuration:
 
     def db_connection(self):
         # type: () -> SQLConnection
-        return pysqlite3.connect(self.sqlite_file)
+        return sqlite3.connect(self.sqlite_file)
 
     @property
     def flask_configuration(self):
