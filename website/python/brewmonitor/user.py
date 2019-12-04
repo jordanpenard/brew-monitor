@@ -1,6 +1,8 @@
 import bcrypt
-from flask_login import UserMixin
+from flask import current_app
+from flask_login import UserMixin, current_user
 from brewmonitor.utils import config
+from functools import wraps
 
 class User(UserMixin):
     def __init__(self, id):
@@ -79,3 +81,14 @@ class User(UserMixin):
                 if bcrypt.checkpw(password.encode('utf8'), hashed_password) is True:
                     return User(id)
         return None
+
+
+def admin_required(func):
+
+    @wraps(func)
+    def decorated_view(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            return current_app.login_manager.unauthorized()
+        return func(*args, **kwargs)
+    return decorated_view
+    
