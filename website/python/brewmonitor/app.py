@@ -36,7 +36,7 @@ def make_app(secret_key):
     brewmonitor.register_blueprint(storage_bp)
     
     login_manager = LoginManager()
-    login_manager.login_view = 'home.login'
+    login_manager.login_view = 'home.index'
     login_manager.init_app(brewmonitor)
 
     @login_manager.user_loader

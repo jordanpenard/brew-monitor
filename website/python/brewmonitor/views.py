@@ -2,7 +2,7 @@ from flask import Blueprint, url_for, request, redirect
 from flask_mako import render_template
 
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
-from brewmonitor.user import User
+from brewmonitor.user import User, admin_required
 
 home_bp = Blueprint(
     'home',
@@ -42,30 +42,21 @@ def logout():
     return redirect(url_for('home.index'))
 
 @home_bp.route('/admin/users')
-@login_required
+@admin_required
 def admin_users():
-    if not current_user.is_admin:
-        return redirect(url_for('home.index'))
-    else:
-        return render_template('admin_users.html.mako', users=User.get_users())
+    return render_template('admin_users.html.mako', users=User.get_users())
 
 @home_bp.route('/admin/users/add', methods=['POST'])
-@login_required
+@admin_required
 def add_user():
-    if not current_user.is_admin:
-        return redirect(url_for('home.index'))
-    else:
-        username = request.form.get('username')
-        password = request.form.get('password')
-        is_admin = True if request.form.get('is_admin') else False
-        User.add(username, password, is_admin)
-        return redirect(url_for('home.admin_users'))
+    username = request.form.get('username')
+    password = request.form.get('password')
+    is_admin = request.form.get('is_admin')
+    User.add(username, password, is_admin)
+    return redirect(url_for('home.admin_users'))
 
 @home_bp.route('/admin/users/delete/<id>')
-@login_required
+@admin_required
 def delete_user(id):
-    if not current_user.is_admin:
-        return redirect(url_for('home.index'))
-    else:
-        User.delete(id)
-        return redirect(url_for('home.admin_users'))
+    User.delete(id)
+    return redirect(url_for('home.admin_users'))
