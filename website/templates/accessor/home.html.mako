@@ -15,7 +15,7 @@
 ## TODO(tr) Should contain the list of sensors/projects + a button to sensors/projects.
 
 <%block name="elem_links_row">
-% if management_link is not None and current_user.is_authenticated:
+% if management_link is not None:
     ## Management row
     <%
         target = management_link.pop('link')

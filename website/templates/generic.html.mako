@@ -76,32 +76,31 @@
                         </li>
                     </ul>
                     % if not current_user.is_authenticated:
-                    <ul class="nav navbar-nav navbar-right">
-                        <li class="nav-item" id="login_nav_item">
-                            <a class="nav-link" href="${url_for('home.login')}">Login</a>
-                        </li>
-                    </ul>
-    		    % endif
-    		    % if current_user.is_authenticated:
-                    <ul class="nav navbar-nav navbar-right">
-                        <li class="nav-item" id="username_nav_item">
-                            <a class="nav-link disabled">${current_user.name}</a>
-                        </li>
-                        <li class="nav-item" id="logout_nav_item">
-                            <a class="nav-link" href="${url_for('home.logout')}">Logout</a>
-                        </li>
-    		            % if current_user.is_admin:
-                        <li class="nav-item dropdown" id="admin_nav_item">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAdmin" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Admin
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownAdmin">
-                              <a class="dropdown-item" href="${url_for('home.admin_users')}">Users</a>
-                            </div>
-                        </li>
-    		            % endif
-                    </ul>
-    		    % endif
+                        <ul class="nav navbar-nav navbar-right">
+                            <li class="nav-item" id="login_nav_item">
+                                <a class="nav-link" href="${url_for('home.login')}">Login</a>
+                            </li>
+                        </ul>
+    		        % else:
+                        <ul class="nav navbar-nav navbar-right">
+                            <li class="nav-item" id="username_nav_item">
+                                <a class="nav-link disabled">${current_user.name}</a>
+                            </li>
+                            <li class="nav-item" id="logout_nav_item">
+                                <a class="nav-link" href="${url_for('home.logout')}">Logout</a>
+                            </li>
+    		                % if current_user.is_admin:
+                                <li class="nav-item dropdown" id="admin_nav_item">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAdmin" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Admin
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownAdmin">
+                                      <a class="dropdown-item" href="${url_for('home.admin_users')}">Users</a>
+                                    </div>
+                                </li>
+    		                % endif
+                        </ul>
+    		        % endif
                 </div>
 
             </nav>

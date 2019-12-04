@@ -24,7 +24,7 @@
     ${generic.render_link(linked_elem)}
     </div>
 
-    % if management_link is not None and current_user.is_authenticated :
+    % if management_link is not None :
     <div class="col-6">
         <form action="${management_link}" method="POST">
             <button class="btn btn-danger" type="submit">
@@ -39,7 +39,7 @@
 
 </div>
 
-% if management_link is not None and management_items and current_user.is_authenticated:
+% if management_link is not None and management_items :
 <form action="${management_link}" method="POST">
     <select name="sensor_id" required>
         <option value="" selected disabled>Choose new ${linked_class}</option>
@@ -129,10 +129,6 @@ ${generic.elem_links_row()}
                     ## TODO(tr) js dump that protects " and <, > etc
                     data: ${json.dumps(datatable)}
                 });
-
-                % if not current_user.is_authenticated:
-                    dt.column(4).visible(false);
-                % endif
 
                 ## Populate the links
                 ## TODO(tr) This is dirty and I should generate the link data in JS.

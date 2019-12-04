@@ -1,6 +1,3 @@
-<%!
-    import json
-%>
 <%inherit file="generic.html.mako" />
 
 <%block name="head_title">
