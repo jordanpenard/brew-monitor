@@ -14,14 +14,14 @@ from brewmonitor.utils import export_data
 def all_projects():
 
     projects = access.get_projects()
-    elem_links = [
+    project_cards = [
         project.as_link()
         for project in projects
     ]
 
     return render_template(
         'accessor/project.html.mako',
-        elem_links=elem_links,
+        elem_links=project_cards,
         show_add_project=current_user.is_authenticated
     )
 
@@ -33,34 +33,18 @@ def get_project(project_id):
     if project is None:
         abort(HTTPStatus.NOT_FOUND)
 
+    linked_sensor_card = None
     if project.active_sensor:
-        active_sensor = access.get_sensor(project.active_sensor)
-        linked_elem = active_sensor.as_link()
-        linked_elem.update({
-            'icon_classes': 'fas fa-link',
-            'last_active': active_sensor.last_active_str(),
-            # TODO(tr) We should change the btn class depending on how old is the last activity
-            'btn_class': 'btn-success' if active_sensor.name else 'btn-secondary',
-        })
-    else:
-        linked_elem = None
+        linked_sensor_card = access.get_sensor(project.active_sensor).as_link()
 
-    elem_links = [
-        {
-            'link': url_for('accessor.get_sensor', sensor_id=sensor.id) if sensor.name else None,
-            'label': sensor.name or '<deleted>',
-            'last_active': sensor.last_active_str(),
-            # TODO(tr) We should change the btn class depending on how old is the last activity
-            'btn_class': 'btn-success' if sensor.name else 'btn-secondary',
-            'icon_classes': 'fas fa-link' if project.active_sensor == sensor.id else '',
-        }
+    prev_link_sensors = [
+        sensor.as_link()
         for sensor in project.sensors.values()
     ]
-    data_links = [
+    export_data_links = [
         {
             'link': url_for('accessor.get_project_data', project_id=project.id, out_format=_format.lower()),
             'label': _format,
-            'last_active': None,
             'btn_class': 'btn-primary',
             'target': '_blank',
         }
@@ -86,10 +70,10 @@ def get_project(project_id):
         'project',
         project.name,
         project.id,
-        elem_links,
-        data_links,
-        project.data_points,
-        linked_elem=linked_elem,
+        elem_links=prev_link_sensors,
+        data_links=export_data_links,
+        data_points=project.data_points,
+        linked_elem=linked_sensor_card,
         management_link=url_for('accessor.change_project_sensor', project_id=project_id),
         management_items=management_items,
         delete_next=delete_next,

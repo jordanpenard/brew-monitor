@@ -16,14 +16,14 @@ from brewmonitor.utils import export_data
 def all_sensors():
 
     sensors = access.get_sensors()
-    elem_links = [
+    sensor_cards = [
         sensor.as_link()
         for sensor in sensors
     ]
 
     return render_template(
         'accessor/sensor.html.mako',
-        elem_links=elem_links,
+        elem_links=sensor_cards,
         show_add_sensor=current_user.is_authenticated
     )
 
@@ -37,35 +37,21 @@ def get_sensor(sensor_id):
 
     _, project = get_active_project_for_sensor(sensor_id)
 
-    additional_params = {}
+    management_link = None
+    linked_project_card = None
     if project:
-        linked_elem = project.as_link()
-        linked_elem.update({
-            'icon_classes': 'fas fa-link',
-            'btn_class': 'btn-success',
-        })
+        linked_project_card = project.as_link()
         # So that it's undefined if we don't have a linked project.
         management_link = url_for('accessor.change_project_sensor', project_id=project.id, next=request.path)
-    else:
-        linked_elem = None
-        management_link = None
 
-    elem_links = [
-        {
-            'link': url_for('accessor.get_project', project_id=project.id) if project.name else None,
-            'label': project.name or '<deleted>',
-            'last_active': sensor.last_active_str(),
-            # We should change the btn class depending on how old is the last activity or the battery
-            'btn_class': 'btn-success' if project.name else 'btn-secondary',
-            'icon_classes': 'fas fa-link' if project.active_sensor == sensor.id else '',
-        }
+    prev_link_projects = [
+        project.as_link()
         for project in sensor.projects.values()
     ]
     data_links = [
         {
             'link': url_for('accessor.get_sensor_data', sensor_id=sensor.id, out_format=_format.lower()),
             'label': _format,
-            'last_active': None,
             'btn_class': 'btn-primary',
             'target': '_blank',
         }
@@ -75,10 +61,10 @@ def get_sensor(sensor_id):
         'sensor',
         sensor.name,
         sensor.id,
-        elem_links,
-        data_links,
-        sensor.data_points,
-        linked_elem,
+        elem_links=prev_link_projects,
+        data_links=data_links,
+        data_points=sensor.data_points,
+        linked_elem=linked_project_card,
         management_link=management_link,
         delete_next=url_for('accessor.get_sensor', sensor_id=sensor_id, _anchor=f'{sensor.id}_table'),
     )

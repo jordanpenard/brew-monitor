@@ -27,5 +27,7 @@
     </form>
     <br>
 % endif
+
 ${parent.elem_links_row()}
+
 </%block>

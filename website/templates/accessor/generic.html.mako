@@ -1,32 +1,27 @@
 <%inherit file="../generic.html.mako" />
 
-<%def name="render_link(link_data)" >
-    <a class="btn ${link_data['btn_class']}"
-    % if link_data['link']:
-        href="${link_data['link']}"
-    % else:
-        href="#"
-    % endif
-    % if link_data.get('target'):
-        target="${link_data['target']}"
-    % endif
-    >
-    % if 'icon_classes' in link_data:
-        <i class="${link_data['icon_classes']}"></i>
-    % endif
-        ${link_data['label'] | h}
-    % if link_data.get('last_active'):
-        <br />(${link_data['last_active'] | h})
-    % endif
-    </a>
+<%def name="render_card(item)">
+    <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+        <div class="card">
+          <div class="card-header">
+            <div style="float: left;">
+                <a class="stretched-link" href="${item['link']}">${item['label']}</a>
+            </div><div style="float: right;">
+                ${item['sensor_state'].value}
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-text">${item['last_active']}</p>
+            <p class="card-text">Owner : ${item['owner']}</p>
+          </div>
+        </div>
+    </div>
 </%def>
 
 <%block name="elem_links_row">
 <div class="row">
-    % for link in elem_links:
-        <div class="col-lg-3 col-md-4 col-sm-6">
-            ${render_link(link)}
-        </div>
+    % for item in elem_links:
+        ${render_card(item)}
     % endfor
     % if not elem_links:
         <div class="col-12">No links.</div>
