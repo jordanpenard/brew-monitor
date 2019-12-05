@@ -65,6 +65,10 @@ def get_project(project_id):
                 'label': label,
             })
 
+    management_link = None
+    if current_user.is_authenticated:
+        management_link=url_for('accessor.change_project_sensor', project_id=project_id),
+
     delete_next = url_for('accessor.get_project', project_id=project_id, _anchor=f'{project.id}_table')
     return view_element(
         'project',
@@ -74,7 +78,7 @@ def get_project(project_id):
         data_links=export_data_links,
         data_points=project.data_points,
         linked_elem=linked_sensor_card,
-        management_link=url_for('accessor.change_project_sensor', project_id=project_id),
+        management_link=management_link,
         management_items=management_items,
         delete_next=delete_next,
     )
