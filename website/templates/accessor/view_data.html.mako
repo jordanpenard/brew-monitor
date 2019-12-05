@@ -20,9 +20,7 @@
 
 <div class="row">
 % if linked_elem is not None:
-    <div class="col-6">
-    ${generic.render_link(linked_elem)}
-    </div>
+    ${generic.render_card(linked_elem)}
 
     % if management_link is not None :
     <div class="col-6">
@@ -53,18 +51,20 @@
 </form>
 % endif
 
-<h2>Data</h2>
+<h2>Previously linked ${linked_class}</h2>
 
 ## Not Called by default and that's good so we can have more elements above
 ${generic.elem_links_row()}
 
 <div id='data_links'>
     <div class="btn-group-sm">
-    % for link in data_links:
-        ${generic.render_link(link)}
+    % for item in data_links:
+        <a href="${item['link']}" class="btn ${item['btn_class']}" target="${item['target']}">${item['label']}</a>
     % endfor
     </div>
 </div>
+
+<h2>Data</h2>
 
 % if datatable:
 ## Do not show if we have no data
