@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 class Sensor:
     id = attr.ib(type=int)
     name = attr.ib(type=str)
+    secret = attr.ib(type=str)
     last_active = attr.ib(type=datetime, default=None)  # in SQL we would get that from the datapoints
 
     def last_active_str(self):
@@ -39,6 +40,7 @@ class Sensor:
         return cls(
             d['id'],
             d['name'],
+            d['secret'],
             datetime.fromisoformat(d['last_active']) if d['last_active'] else None,
         )
 
@@ -48,7 +50,7 @@ class Sensor:
         # TODO(tr) Get last battery as well
         cursor = db_conn.execute(
             '''
-            select id, name, (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active
+            select id, name, secret, (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active
             from Sensor;
             '''
         )
@@ -60,7 +62,7 @@ class Sensor:
         # type: (SQLConnection, int) -> Optional[Sensor]
         sens_cursor = db_conn.execute(
             '''
-            select id, name, (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active
+            select id, name, secret, (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active
             from Sensor where id = ?; 
             ''',
             (sensor_id,)
@@ -82,13 +84,18 @@ class Sensor:
         cursor = db_conn.cursor()
         cursor.execute(
             '''
-            insert into Sensor (name) values (?);
+            insert into Sensor (name, secret) values (?, ?);
             ''',
-            (name,)
+            (name,"secret")
+            # TODO : secret should be provided by the user
         )
         # lastrowid is the last successful insert on that cursor
         return cursor.lastrowid
 
+    def verify_identity(self, request_secret):
+        # type: (str) -> boot
+        # Return true if the secret provided by the request matches the sensor's secret from the db
+        return self.secret == request_secret
 
 @attr.s
 class Project:

@@ -18,7 +18,6 @@ storage_bp = Blueprint(
     url_prefix='/storage'
 )
 
-
 @storage_bp.route('/sensor/add_data', methods=['POST'])
 def add_data():
 
@@ -27,6 +26,12 @@ def add_data():
 
     json_args = request.get_json()
     print (f'Received json_args={json_args}')
+
+    if 'secret' not in json_args:
+        return json_response({"errors": [f"Missing mendatory field 'secret'"]}, HTTPStatus.NOT_FOUND)
+    
+    request_secret = json_args.pop('secret')
+
     if 'timestamp' not in json_args:
         json_args['timestamp'] = datetime.now()
 
@@ -41,6 +46,9 @@ def add_data():
     sensor, project = get_active_project_for_sensor(d.sensor_id)
     if sensor is None:
         return json_response({"errors": [f"Did not find the sensor {d.sensor_id!r}"]}, HTTPStatus.NOT_FOUND)
+
+    if not sensor.verify_identity(request_secret):
+        return json_response({"errors": [f"Invalide sensor identification"]}, HTTPStatus.NOT_FOUND)
 
     if project is not None:
         d.project_id = project.id
