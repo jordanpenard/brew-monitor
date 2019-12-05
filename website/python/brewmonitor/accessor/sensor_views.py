@@ -42,7 +42,8 @@ def get_sensor(sensor_id):
     if project:
         linked_project_card = project.as_link()
         # So that it's undefined if we don't have a linked project.
-        management_link = url_for('accessor.change_project_sensor', project_id=project.id, next=request.path)
+        if current_user.is_authenticated:
+            management_link = url_for('accessor.change_project_sensor', project_id=project.id, next=request.path)
 
     prev_link_projects = [
         project.as_link()
