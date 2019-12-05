@@ -20,20 +20,11 @@ def all_sensors():
         sensor.as_link()
         for sensor in sensors
     ]
-    management_link = None
-    if current_user.is_authenticated:
-        management_link={
-            'link': url_for('accessor.add_sensor'),
-            'label': 'New sensor',
-            'btn_class': 'btn-success',  # green
-            'icon_classes': 'fas fa-plus-circle',
-        }
 
     return render_template(
-        'accessor/home.html.mako',
-        elem_class='sensor',
+        'accessor/sensor.html.mako',
         elem_links=elem_links,
-        management_link=management_link,
+        show_add_sensor=current_user.is_authenticated
     )
 
 
@@ -107,5 +98,5 @@ def get_sensor_data(sensor_id, out_format):
 @login_required
 def add_sensor():
 
-    sensor_id = access.insert_sensor(request.form['name'])
+    sensor_id = access.insert_sensor(request.form['name'], request.form['secret'], current_user.id)
     return redirect(url_for('accessor.get_sensor', sensor_id=sensor_id))
