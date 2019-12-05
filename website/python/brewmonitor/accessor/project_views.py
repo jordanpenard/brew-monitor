@@ -18,20 +18,11 @@ def all_projects():
         project.as_link()
         for project in projects
     ]
-    management_link = None
-    if current_user.is_authenticated:
-        management_link = {
-            'link': url_for('accessor.add_project'),
-            'label': 'New project',
-            'btn_class': 'btn-success',  # green
-            'icon_classes': 'fas fa-plus-circle',
-        }
 
     return render_template(
-        'accessor/home.html.mako',
-        elem_class='project',
+        'accessor/project.html.mako',
         elem_links=elem_links,
-        management_link=management_link,
+        show_add_project=current_user.is_authenticated
     )
 
 
@@ -119,7 +110,7 @@ def get_project_data(project_id, out_format):
 @login_required
 def add_project():
 
-    project_id = access.insert_project(request.form['name'])
+    project_id = access.insert_project(request.form['name'], current_user.id)
     return redirect(url_for('accessor.get_project', project_id=project_id))
 
 
