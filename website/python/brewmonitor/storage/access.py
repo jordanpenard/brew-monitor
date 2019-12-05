@@ -204,14 +204,14 @@ class Project:
             )
 
     @classmethod
-    def create_new(cls, db_conn, name):
-        # type: (SQLConnection, AnyStr) -> int
+    def create_new(cls, db_conn, name, owner):
+        # type: (SQLConnection, AnyStr, Int) -> int
         cursor = db_conn.cursor()
         cursor.execute(
             '''
-            insert into Project (name) values (?);
+            insert into Project (name, owner) values (?, ?);
             ''',
-            (name,)
+            (name,owner)
         )
         # lastrowid is the last successful insert on that cursor
         return cursor.lastrowid
@@ -410,10 +410,10 @@ def get_sensor_data(sensor_id):
         return SensorData.get_data(db_conn, sensor_id)
 
 
-def insert_project(name):
-    # type: (AnyStr) -> int
+def insert_project(name, owner):
+    # type: (AnyStr, Int) -> int
     with config().db_connection() as db_conn:
-        return Project.create_new(db_conn, name)
+        return Project.create_new(db_conn, name, owner)
 
 
 def insert_sensor(name, secret, owner):
