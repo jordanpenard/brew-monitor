@@ -27,7 +27,7 @@ def all_sensors():
             'label': 'New sensor',
             'btn_class': 'btn-success',  # green
             'icon_classes': 'fas fa-plus-circle',
-        },
+        }
 
     return render_template(
         'accessor/home.html.mako',
