@@ -5,16 +5,22 @@ import attr
 from flask import url_for
 
 from brewmonitor.utils import config
+from enum import Enum
 
 if TYPE_CHECKING:
     from brewmonitor.configuration import SQLConnection
 
+class SensorState(Enum):
+    ACTIVE = '<span style="vertical-align: middle;" class="badge badge-primary">Active</span>'       # blue
+    LIVE = '<span style="vertical-align: middle;" class="badge badge-success">Live</span>'           # green
+    INACTIVE = '<span style="vertical-align: middle;" class="badge badge-secondary">Inactive</span>' # gray
 
 @attr.s
 class Sensor:
     id = attr.ib(type=int)
     name = attr.ib(type=str)
     secret = attr.ib(type=str)
+    owner = attr.ib(type=str)
     last_active = attr.ib(type=datetime, default=None)  # in SQL we would get that from the datapoints
 
     def last_active_str(self):
@@ -23,14 +29,14 @@ class Sensor:
             return self.last_active.isoformat()
         return 'inactive'
 
-    def button_class(self):
+    def get_state(self):
         if self.last_active is not None:
             if datetime.now() - self.last_active > timedelta(days=1):
-                return 'btn-primary'  # blue
+                return SensorState.ACTIVE
             else:
-                return 'btn-success'  # green
+                return SensorState.LIVE
         else:
-            return 'btn-secondary'  # gray
+            return SensorState.INACTIVE
 
     @classmethod
     def row_factory(cls, _cursor, _row):
@@ -41,6 +47,7 @@ class Sensor:
             d['id'],
             d['name'],
             d['secret'],
+            d['owner'],
             datetime.fromisoformat(d['last_active']) if d['last_active'] else None,
         )
 
@@ -50,7 +57,7 @@ class Sensor:
         # TODO(tr) Get last battery as well
         cursor = db_conn.execute(
             '''
-            select id, name, secret, (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active
+            select id, name, secret, (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active, (select username from User where id = Sensor.owner limit 1) as owner
             from Sensor;
             '''
         )
@@ -62,7 +69,7 @@ class Sensor:
         # type: (SQLConnection, int) -> Optional[Sensor]
         sens_cursor = db_conn.execute(
             '''
-            select id, name, secret, (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active
+            select id, name, secret, (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active, (select username from User where id = Sensor.owner limit 1) as owner
             from Sensor where id = ?; 
             ''',
             (sensor_id,)
@@ -73,9 +80,10 @@ class Sensor:
     def as_link(self):
         return {
             'link': url_for('accessor.get_sensor', sensor_id=self.id),
+            'owner': self.owner,
             'label': self.name or '<deleted>',
             'last_active': self.last_active_str() ,
-            'btn_class': self.button_class(),
+            'sensor_state': self.get_state(),
         }
 
     @classmethod
@@ -100,6 +108,7 @@ class Sensor:
 class Project:
     id = attr.ib(type=int)
     name = attr.ib(type=str)
+    owner = attr.ib(type=str)
     active_sensor = attr.ib(default=None)  # Assuming 1 sensor per project but could change the sensor.
 
     @classmethod
@@ -110,6 +119,7 @@ class Project:
         return cls(
             d['id'],
             d['name'],
+            d['owner'],
             d['active_sensor']
         )
 
@@ -118,7 +128,7 @@ class Project:
         # type: (SQLConnection) -> List[Project]
         cursor = db_conn.execute(
             '''
-            select id, name, active_sensor
+            select id, name, active_sensor, (select username from User where id = Project.owner limit 1) as owner
             from Project;
             '''
         )
@@ -131,7 +141,7 @@ class Project:
         # type: (SQLConnection, int) -> Project
         cursor = db_conn.execute(
             '''
-            select id, name, active_sensor
+            select id, name, active_sensor, (select username from User where id = Project.owner limit 1) as owner
             from Project
             where id = ?;
             ''',
@@ -145,7 +155,7 @@ class Project:
         # type: (SQLConnection, int) -> Optional[Project]
         proj_cursor = db_conn.execute(
             '''
-            select id, name, active_sensor
+            select id, name, active_sensor, (select username from User where id = Project.owner limit 1) as owner
             from Project
             where active_sensor = ?;
             ''',
@@ -159,16 +169,17 @@ class Project:
             # TODO(tr) build sensor object in Project object on query
             sensor = get_sensor(self.active_sensor)
             last_active = sensor.last_active_str()
-            btn_class = sensor.button_class()
+            sensor_state = sensor.get_state()
         else:
-            last_active = 'inactive'
-            btn_class = 'btn-secondary'  # gray
+            last_active = 'Inactive'
+            sensor_state = SensorState.INACTIVE
 
         return {
             'link': url_for('accessor.get_project', project_id=self.id),
             'label': self.name or '<deleted>',
+            'owner': self.owner,
             'last_active': last_active,
-            'btn_class': btn_class,
+            'sensor_state': sensor_state,
         }
 
     def attach_sensor(self, db_conn, sensor_id=None):
