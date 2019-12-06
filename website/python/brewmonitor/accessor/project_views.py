@@ -33,13 +33,16 @@ def get_project(project_id):
     if project is None:
         abort(HTTPStatus.NOT_FOUND)
 
+    prev_link_sensors = project.sensors
     linked_sensor_card = None
     if project.active_sensor:
         linked_sensor_card = access.get_sensor(project.active_sensor).as_link()
+        # pop the active sensor so it doesn't show twice in "linked sensor" and "previously linked sensor" sections
+        prev_link_sensors.pop(project.active_sensor)
 
-    prev_link_sensors = [
+    prev_link_sensor_cards = [
         sensor.as_link()
-        for sensor in project.sensors.values()
+        for sensor in prev_link_sensors.values()
     ]
     export_data_links = [
         {
@@ -74,7 +77,7 @@ def get_project(project_id):
         'project',
         project.name,
         project.id,
-        elem_links=prev_link_sensors,
+        elem_links=prev_link_sensor_cards,
         data_links=export_data_links,
         data_points=project.data_points,
         linked_elem=linked_sensor_card,

@@ -51,10 +51,15 @@
 </form>
 % endif
 
+% if elem_links :
 <h2>Previously linked ${linked_class}</h2>
 
-## Not Called by default and that's good so we can have more elements above
-${generic.elem_links_row()}
+<div class="row">
+    % for item in elem_links:
+        ${generic.render_card(item)}
+    % endfor
+</div>
+% endif
 
 <div id='data_links'>
     <div class="btn-group-sm">
