@@ -67,7 +67,7 @@ def get_project(project_id):
 
     management_link = None
     if current_user.is_authenticated:
-        management_link=url_for('accessor.change_project_sensor', project_id=project_id),
+        management_link=url_for('accessor.change_project_sensor', project_id=project_id)
 
     delete_next = url_for('accessor.get_project', project_id=project_id, _anchor=f'{project.id}_table')
     return view_element(
