@@ -37,17 +37,20 @@ def get_sensor(sensor_id):
 
     _, project = get_active_project_for_sensor(sensor_id)
 
+    prev_link_projects = sensor.projects
     management_link = None
     linked_project_card = None
     if project:
         linked_project_card = project.as_link()
+        # pop the active project so it doesn't show twice in "linked project" and "previously linked project" sections
+        prev_link_projects.pop(project.id)
         # So that it's undefined if we don't have a linked project.
         if current_user.is_authenticated:
             management_link = url_for('accessor.change_project_sensor', project_id=project.id, next=request.path)
 
-    prev_link_projects = [
+    prev_link_project_cards = [
         project.as_link()
-        for project in sensor.projects.values()
+        for project in prev_link_projects.values()
     ]
     data_links = [
         {
@@ -62,7 +65,7 @@ def get_sensor(sensor_id):
         'sensor',
         sensor.name,
         sensor.id,
-        elem_links=prev_link_projects,
+        elem_links=prev_link_project_cards,
         data_links=data_links,
         data_points=sensor.data_points,
         linked_elem=linked_project_card,
