@@ -13,15 +13,9 @@ from brewmonitor.utils import export_data
 @accessor_bp.route('/project', methods=['GET'])
 def all_projects():
 
-    projects = access.get_projects()
-    project_cards = [
-        project.as_link()
-        for project in projects
-    ]
-
     return render_template(
         'accessor/project.html.mako',
-        elem_links=project_cards,
+        elem_links=access.get_projects(),
         show_add_project=current_user.is_authenticated
     )
 
@@ -34,16 +28,13 @@ def get_project(project_id):
         abort(HTTPStatus.NOT_FOUND)
 
     prev_link_sensors = project.sensors
-    linked_sensor_card = None
+    linked_sensor = None
     if project.active_sensor:
-        linked_sensor_card = access.get_sensor(project.active_sensor).as_link()
+        linked_sensor = access.get_sensor(project.active_sensor)
         # pop the active sensor so it doesn't show twice in "linked sensor" and "previously linked sensor" sections
-        prev_link_sensors.pop(project.active_sensor)
+        if project.active_sensor in prev_link_sensors:
+            prev_link_sensors.pop(project.active_sensor)
 
-    prev_link_sensor_cards = [
-        sensor.as_link()
-        for sensor in prev_link_sensors.values()
-    ]
     export_data_links = [
         {
             'link': url_for('accessor.get_project_data', project_id=project.id, out_format=_format.lower()),
@@ -77,10 +68,10 @@ def get_project(project_id):
         'project',
         project.name,
         project.id,
-        elem_links=prev_link_sensor_cards,
+        elem_links=prev_link_sensors.values(),
         data_links=export_data_links,
         data_points=project.data_points,
-        linked_elem=linked_sensor_card,
+        linked_elem=linked_sensor,
         management_link=management_link,
         management_items=management_items,
         delete_next=delete_next,
