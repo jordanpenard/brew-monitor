@@ -1,11 +1,5 @@
 <%inherit file="../generic.html.mako" />
 
-<script>
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip()
-    })
-</script>
-
 <%block name="head_title">
     <title>Brew Monitor - Project List</title>
 </%block>
@@ -21,6 +15,11 @@
 ## TODO(tr) Should contain the list of sensors/projects + a button to sensors/projects.
 
 <%def name="render_project_card(item)">
+    <script>
+        $(function () {
+          $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
     <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
         <div class="card">
           <div class="card-header">
@@ -38,7 +37,18 @@
             </div>
           </div>
           <div class="card-body">
-            <p class="card-text">Owner : ${item.owner}</p>
+            <p class="card-text">
+                Owner : ${item.owner}<br>
+                % if item.last_temperature:
+                    Temperature : ${item.last_temperature}&deg;C<br>
+                % endif
+                % if item.first_angle and item.last_angle:
+                    &Delta;&Theta; : ${float(item.first_angle) - float(item.last_angle)}&deg;<br>
+                % endif
+                % if item.first_active and item.last_active:
+                    Length : ${item.last_active - item.first_active}
+                % endif
+            </p>
           </div>
         </div>
     </div>
