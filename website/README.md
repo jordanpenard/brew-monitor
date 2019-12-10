@@ -124,7 +124,7 @@ The API will search the DB for the provided sensor ID and find the matching proj
 $> curl \
   -H "Content-Type: application/json" \
   http://localhost:5000/storage/sensor/add_data \
-  -d '{"sensor_id": 1, "angle": "15.5", "temperature": "20.5", "battery": "2.8"}'
+  -d '{"sensor_id": 1, "angle": "14.3", "temperature": "20.3", "battery": "2.6", "secret": "secret"}'
 
 {"created": [{"sensor_id": 1, "project_id": 1, "timestamp": 1554034368, "angle": "15.5", "temperature": "20.5", "battery": 2800}]}
 ```
