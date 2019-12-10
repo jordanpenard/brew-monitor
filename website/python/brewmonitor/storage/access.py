@@ -152,7 +152,8 @@ class Project:
                 (select angle from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_angle, 
                 (select temperature from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_temperature, 
                 (select username from User where id = Project.owner limit 1) as owner
-            from Project;
+            from Project
+            order by id desc;
             '''
         )
         # TODO(tr) Add order by last activity
@@ -192,7 +193,8 @@ class Project:
                 (select temperature from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_temperature, 
                 (select username from User where id = Project.owner limit 1) as owner
             from Project
-            where active_sensor = ?;
+            where active_sensor = ?
+            order by id desc;
             ''',
             (sensor_id,)
         )
