@@ -17,6 +17,7 @@ class Sensor:
     secret = attr.ib(type=str)
     owner = attr.ib(type=str)
     last_active = attr.ib(type=datetime, default=None)  # in SQL we would get that from the datapoints
+    last_battery = attr.ib(type=str, default=None)
 
     def last_active_str(self):
         # type: () -> str
@@ -35,6 +36,7 @@ class Sensor:
             d['secret'],
             d['owner'],
             datetime.fromisoformat(d['last_active']) if d['last_active'] else None,
+            d['last_battery'],
         )
 
     @classmethod
@@ -43,7 +45,10 @@ class Sensor:
         # TODO(tr) Get last battery as well
         cursor = db_conn.execute(
             '''
-            select id, name, secret, (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active, (select username from User where id = Sensor.owner limit 1) as owner
+            select id, name, secret, 
+                (select battery from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_battery,
+                (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active,
+                (select username from User where id = Sensor.owner limit 1) as owner
             from Sensor;
             '''
         )
@@ -55,7 +60,10 @@ class Sensor:
         # type: (SQLConnection, int) -> Optional[Sensor]
         sens_cursor = db_conn.execute(
             '''
-            select id, name, secret, (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active, (select username from User where id = Sensor.owner limit 1) as owner
+            select id, name, secret, 
+                (select battery from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_battery,
+                (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active,
+                (select username from User where id = Sensor.owner limit 1) as owner
             from Sensor where id = ?; 
             ''',
             (sensor_id,)
@@ -103,7 +111,11 @@ class Project:
     name = attr.ib(type=str)
     owner = attr.ib(type=str)
     active_sensor = attr.ib(default=None)  # Assuming 1 sensor per project but could change the sensor.
+    first_active = attr.ib(type=datetime, default=None)  # in SQL we would get that from the datapoints
     last_active = attr.ib(type=datetime, default=None)  # in SQL we would get that from the datapoints
+    first_angle = attr.ib(type=str, default=None)
+    last_angle = attr.ib(type=str, default=None)
+    last_temperature = attr.ib(type=str, default=None)
 
     def last_active_str(self):
         # type: () -> str
@@ -121,7 +133,11 @@ class Project:
             d['name'],
             d['owner'],
             d['active_sensor'],
+            datetime.fromisoformat(d['first_active']) if d['first_active'] else None,
             datetime.fromisoformat(d['last_active']) if d['last_active'] else None,
+            d['first_angle'],
+            d['last_angle'],
+            d['last_temperature'],
         )
 
     @classmethod
@@ -129,7 +145,13 @@ class Project:
         # type: (SQLConnection) -> List[Project]
         cursor = db_conn.execute(
             '''
-            select id, name, active_sensor, (select timestamp from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_active, (select username from User where id = Project.owner limit 1) as owner
+            select id, name, active_sensor, 
+                (select timestamp from Datapoint where project_id = Project.id order by timestamp asc limit 1) as first_active, 
+                (select timestamp from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_active, 
+                (select angle from Datapoint where project_id = Project.id order by timestamp asc limit 1) as first_angle, 
+                (select angle from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_angle, 
+                (select temperature from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_temperature, 
+                (select username from User where id = Project.owner limit 1) as owner
             from Project;
             '''
         )
@@ -142,7 +164,13 @@ class Project:
         # type: (SQLConnection, int) -> Project
         cursor = db_conn.execute(
             '''
-            select id, name, active_sensor, (select timestamp from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_active, (select username from User where id = Project.owner limit 1) as owner
+            select id, name, active_sensor, 
+                (select timestamp from Datapoint where project_id = Project.id order by timestamp asc limit 1) as first_active, 
+                (select timestamp from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_active, 
+                (select angle from Datapoint where project_id = Project.id order by timestamp asc limit 1) as first_angle, 
+                (select angle from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_angle, 
+                (select temperature from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_temperature, 
+                (select username from User where id = Project.owner limit 1) as owner
             from Project
             where id = ?;
             ''',
@@ -156,7 +184,13 @@ class Project:
         # type: (SQLConnection, int) -> Optional[Project]
         proj_cursor = db_conn.execute(
             '''
-            select id, name, active_sensor, (select timestamp from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_active, (select username from User where id = Project.owner limit 1) as owner
+            select id, name, active_sensor, 
+                (select timestamp from Datapoint where project_id = Project.id order by timestamp asc limit 1) as first_active, 
+                (select timestamp from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_active, 
+                (select angle from Datapoint where project_id = Project.id order by timestamp asc limit 1) as first_angle, 
+                (select angle from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_angle, 
+                (select temperature from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_temperature, 
+                (select username from User where id = Project.owner limit 1) as owner
             from Project
             where active_sensor = ?;
             ''',
