@@ -43,7 +43,7 @@
                     Temperature : ${item.last_temperature}&deg;C<br>
                 % endif
                 % if item.first_angle and item.last_angle:
-                    &Delta;&Theta; : ${format(float(item.first_angle) - float(item.last_angle), '.1f')}&deg;<br>
+                    &Delta;&Theta; : ${format(float(item.last_angle) - float(item.first_angle), '.1f')}&deg;<br>
                 % endif
                 % if item.first_active and item.last_active:
                     Length : ${item.last_active - item.first_active}
