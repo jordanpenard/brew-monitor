@@ -9,16 +9,9 @@ if TYPE_CHECKING:
     from brewmonitor.storage import access
 
 
-def view_element(
-    elem_class,  # type: str
+def build_view_data(
     elem_name,  # type: str
-    elem_id,  # type: str
-    elem_links,  # type: List[Dict]
-    data_links,  # type: List[Dict]
     data_points,  # type: List[access.DataPoints]
-    linked_elem=None,  # type: Optional[Dict]
-    management_link=None,  # type: Optional[str]
-    management_items=None,  # type: Optional[List[Dict]]
     delete_next=None,  # type: Optional[str]
 ):
     # type: (...) -> Response
@@ -96,18 +89,4 @@ def view_element(
     for s in sorted(sensor_data.keys()):
         plot['data'] += sensor_data[s]
 
-    return render_template(
-        'view_data.html.mako',
-        elem_class=elem_class,
-        elem_name=elem_name,
-        elem_id=elem_id,
-        elem_links=elem_links,
-        data_links=data_links,
-        datatable=datatable,
-        plot=plot,
-        linked_elem=linked_elem,
-        linked_class='sensor' if elem_class == 'project' else 'project',
-        management_link=management_link,
-        management_items=management_items,
-        allow_delete_datapoints=current_user.is_authenticated
-    )
+    return datatable, plot

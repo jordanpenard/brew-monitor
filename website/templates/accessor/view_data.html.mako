@@ -1,65 +1,6 @@
 <%!
     import json
 %>
-<%inherit file="generic.html.mako" />
-<%namespace name="generic" file="accessor/generic.html.mako" />
-
-<%block name="head_title">
-    <title>Brew Monitor - ${elem_name | h}</title>
-</%block>
-
-<%block name="title">
-    <h1>${elem_name | h} (${elem_class | h}_id=${elem_id | h})</h1>
-    
-    <script type="text/javascript">
-        $('#accessor_${elem_class | h}_nav_item').addClass('active');
-    </script>
-</%block>
-
-<h2>Linked ${linked_class}</h2>
-
-<div class="row">
-% if linked_elem is not None:
-    ${generic.render_card(linked_elem)}
-
-    % if management_link is not None :
-    <div class="col-6">
-        <form action="${management_link}" method="POST">
-            <button class="btn btn-danger" type="submit">
-                <i class="fas fa-unlink"></i> Unlink ${linked_class}
-            </button>
-        </form>
-    </div>
-    % endif
-% else:
-    <div class="col-12">No linked elements.</div>
-% endif
-
-</div>
-
-% if management_link is not None and management_items :
-<form action="${management_link}" method="POST">
-    <select name="sensor_id" required>
-        <option value="" selected disabled>Choose new ${linked_class}</option>
-    % for item in management_items:
-        <option value="${item['value']}">${item['label'] | h}</option>
-    % endfor
-    </select>
-    <button class="btn btn-success" type="submit">
-        <i class="fas fa-link"></i> Link selected sensor
-    </button>
-</form>
-% endif
-
-% if elem_links :
-<h2>Previously linked ${linked_class}</h2>
-
-<div class="row">
-    % for item in elem_links:
-        ${generic.render_card(item)}
-    % endfor
-</div>
-% endif
 
 <div id='data_links'>
     <div class="btn-group-sm">

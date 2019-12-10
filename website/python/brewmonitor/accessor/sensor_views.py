@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 from werkzeug.exceptions import abort
 
 from brewmonitor.accessor._app import accessor_bp
-from brewmonitor.accessor.utils import view_element
+from brewmonitor.accessor.utils import build_view_data
 from brewmonitor.storage import access
 from brewmonitor.storage.access import get_active_project_for_sensor
 from brewmonitor.utils import export_data
@@ -50,16 +50,25 @@ def get_sensor(sensor_id):
         }
         for _format in ['CSV', 'JSON']
     ]
-    return view_element(
+
+    delete_next=url_for('accessor.get_sensor', sensor_id=sensor_id, _anchor=f'{sensor.id}_table'),
+
+    datatable, plot = build_view_data(
         'sensor',
-        sensor.name,
-        sensor.id,
+        data_points=sensor.data_points,
+        delete_next=delete_next)
+    
+    return render_template(
+        'accessor/view_sensor.html.mako',
+        elem_name=sensor.name,
+        elem_id=sensor.id,
         elem_links=prev_link_projects.values(),
         data_links=data_links,
-        data_points=sensor.data_points,
+        datatable=datatable,
+        plot=plot,
         linked_elem=linked_project,
         management_link=management_link,
-        delete_next=url_for('accessor.get_sensor', sensor_id=sensor_id, _anchor=f'{sensor.id}_table'),
+        allow_delete_datapoints=current_user.is_authenticated
     )
 
 

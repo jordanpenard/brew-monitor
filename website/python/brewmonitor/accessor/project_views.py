@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from flask_mako import render_template
 
 from brewmonitor.accessor._app import accessor_bp
-from brewmonitor.accessor.utils import view_element
+from brewmonitor.accessor.utils import build_view_data
 from brewmonitor.storage import access
 from brewmonitor.utils import export_data
 
@@ -64,17 +64,24 @@ def get_project(project_id):
         management_link=url_for('accessor.change_project_sensor', project_id=project_id)
 
     delete_next = url_for('accessor.get_project', project_id=project_id, _anchor=f'{project.id}_table')
-    return view_element(
+    
+    datatable, plot = build_view_data(
         'project',
-        project.name,
-        project.id,
+        data_points=project.data_points,
+        delete_next=delete_next)
+    
+    return render_template(
+        'accessor/view_project.html.mako',
+        elem_name=project.name,
+        elem_id=project.id,
         elem_links=prev_link_sensors.values(),
         data_links=export_data_links,
-        data_points=project.data_points,
+        datatable=datatable,
+        plot=plot,
         linked_elem=linked_sensor,
         management_link=management_link,
-        management_items=management_items,
-        delete_next=delete_next,
+        management_items=management_items or None,
+        allow_delete_datapoints=current_user.is_authenticated
     )
 
 
