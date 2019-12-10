@@ -82,7 +82,7 @@ class Sensor:
         return self.name or '<deleted>'
 
     def is_active(self):
-        if self.last_active is not None and datetime.now() - self.last_active > timedelta(days=1):
+        if self.last_active is not None and datetime.now() - self.last_active < timedelta(days=1):
             return True
         else:
             return False
@@ -209,7 +209,7 @@ class Project:
         return self.name or '<deleted>'
 
     def is_active(self):
-        if self.last_active is not None and datetime.now() - self.last_active > timedelta(days=1):
+        if self.last_active is not None and datetime.now() - self.last_active < timedelta(days=1):
             return True
         else:
             return False
