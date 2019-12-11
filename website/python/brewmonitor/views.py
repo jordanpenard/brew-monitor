@@ -32,8 +32,7 @@ def check_login():
         login_user(id, remember=remember)
         return redirect(url_for('home.index'))
 
-    # if the above check passes, then we know the user has the right credentials
-    return redirect(url_for('home.login')) # if user doesn't exist or password is wrong, reload the page
+    return render_template('login.html.mako', error="Wrong credentials")
 
 @home_bp.route('/logout')
 @login_required
