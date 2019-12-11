@@ -118,7 +118,7 @@
     <div class="footer">
         <%block name="footer">
             <footer class="footer">
-                <span class="text-muted">
+                <span class="text-muted" style="padding: 0px 1rem;">
                     See <a href="https://github.com/jordanpenard/brew-monitor">brew-monitor</a> for licencing.
                 </span>
             </footer>
