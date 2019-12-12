@@ -40,22 +40,3 @@ def logout():
     logout_user()
     return redirect(url_for('home.index'))
 
-@home_bp.route('/admin/users')
-@admin_required
-def admin_users():
-    return render_template('admin_users.html.mako', users=User.get_users())
-
-@home_bp.route('/admin/users/add', methods=['POST'])
-@admin_required
-def add_user():
-    username = request.form.get('username')
-    password = request.form.get('password')
-    is_admin = request.form.get('is_admin')
-    User.add(username, password, is_admin)
-    return redirect(url_for('home.admin_users'))
-
-@home_bp.route('/admin/users/delete/<id>')
-@admin_required
-def delete_user(id):
-    User.delete(id)
-    return redirect(url_for('home.admin_users'))

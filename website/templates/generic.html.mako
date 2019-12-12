@@ -95,7 +95,7 @@
                                     Admin
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownAdmin">
-                                      <a class="dropdown-item" href="${url_for('home.admin_users')}">Users</a>
+                                      <a class="dropdown-item" href="${url_for('admin.admin_users')}">Users</a>
                                     </div>
                                 </li>
     		                % endif
