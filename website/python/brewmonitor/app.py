@@ -4,6 +4,7 @@ from flask import Flask
 from flask_mako import MakoTemplates
 
 from brewmonitor.accessor.views import accessor_bp
+from brewmonitor.admin.views import admin_bp
 from brewmonitor.configuration import Configuration
 from brewmonitor.schema import initialise_db
 from brewmonitor.storage.views import storage_bp
@@ -34,6 +35,7 @@ def make_app(secret_key):
     brewmonitor.register_blueprint(home_bp)
     brewmonitor.register_blueprint(accessor_bp)
     brewmonitor.register_blueprint(storage_bp)
+    brewmonitor.register_blueprint(admin_bp)
     
     login_manager = LoginManager()
     login_manager.login_view = 'home.index'
