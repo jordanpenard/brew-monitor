@@ -49,7 +49,8 @@ class Sensor:
                 (select battery from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_battery,
                 (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active,
                 (select username from User where id = Sensor.owner limit 1) as owner
-            from Sensor;
+            from Sensor
+            order by id desc;
             '''
         )
         cursor.row_factory = cls.row_factory
@@ -64,7 +65,7 @@ class Sensor:
                 (select battery from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_battery,
                 (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active,
                 (select username from User where id = Sensor.owner limit 1) as owner
-            from Sensor where id = ?; 
+            from Sensor where id = ?;
             ''',
             (sensor_id,)
         )
@@ -86,6 +87,27 @@ class Sensor:
             return True
         else:
             return False
+
+    def delete(id):
+        with config().db_connection() as db_conn:
+            db_conn.execute(
+                """
+                Delete from Datapoint where sensor_id=?;
+                """,
+                (id,)
+            )
+            db_conn.execute(
+                """
+                Update Project set 'active_sensor' = NULL where active_sensor=?;
+                """,
+                (id,)
+            )
+            db_conn.execute(
+                """
+                Delete from Sensor where id=?;
+                """,
+                (id,)
+            )
 
     @classmethod
     def create_new(cls, db_conn, name, secret, owner):
@@ -246,6 +268,21 @@ class Project:
                 where id = ?;
                 ''',
                 (self.id,)
+            )
+
+    def delete(id):
+        with config().db_connection() as db_conn:
+            db_conn.execute(
+                """
+                Delete from Datapoint where project_id=?;
+                """,
+                (id,)
+            )
+            db_conn.execute(
+                """
+                Delete from Project where id=?;
+                """,
+                (id,)
             )
 
     @classmethod
