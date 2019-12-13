@@ -36,6 +36,9 @@ function edit(id, url) {
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <input type="hidden" id="project_id"></input>
       </div>
+      <div class="modal-body">
+          <p>This will delete all associated data</p>
+      </div>
       <div class="modal-footer">
         <button class="btn btn-danger" id="modal-btn-yes">Yes</a>
         <button class="btn btn-secondary" data-dismiss="modal" id="modal-btn-no">No</a>
