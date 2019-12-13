@@ -11,10 +11,19 @@
 <script>
 
 function show_confirm(id, name, url) {
-    $("#project_id").html(id);
-    $("#popup-message").html("Are you sure you want to delete " + name + "?");
-    $("#confirm-modal").modal('show');
-    $("#modal-btn-yes").attr("onclick", "location.href='" + url + "'");
+    $("#project_id").html(id)
+    $("#popup-message").html("Are you sure you want to delete " + name + "?")
+    $("#confirm-modal").modal('show')
+    $("#modal-btn-yes").attr("onclick", "location.href='" + url + "'")
+}
+
+function edit(id, url) {
+    name = $("#project_name_"+id).html()
+    $("#project_name_"+id).html('<input type="text" name="project_name" form="project_'+id+'" value="' + name + '">')
+    $("#edit_"+id).html('<i class="fas fa-save" style="width: 16px;" aria-hidden="true"></i>')
+    $("#edit_"+id).attr("onclick", "form.submit()")
+    $("#edit_"+id).attr("form", "project_"+id)
+    $("#delete_"+id).prop("disabled", true)
 }
 
 </script>
@@ -43,13 +52,19 @@ function show_confirm(id, name, url) {
                 <th scope="col">Name</th>
                 <th scope="col">Owner</th>
                 <th scope="col"></th>
+                <th scope="col"></th>
             </tr></thead>
             % for project in projects:
             <tr>
+                <form id="project_${project.id}" method="post" action="${url_for('admin.edit_project', id=project.id)}"></form>
                 <td>${project.id}</td>
-                <td>${project.name}</td>
-                <td>${project.owner}</td>
-                <td><button onClick='show_confirm(${project.id}, "${project.name}", "${url_for('admin.delete_project', id=project.id)}")' class="btn btn-danger"><i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i></a></td>
+                <td id="project_name_${project.id}">${project.name}</td>
+                <td id="project_owner_${project.id}">${project.owner}</td>
+                <td>
+                    <button type="button" id="delete_${project.id}" onClick='show_confirm(${project.id}, "${project.name}", "${url_for('admin.delete_project', id=project.id)}")' class="btn btn-danger btn-sm"><i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i></button>
+                    &nbsp;
+                    <button type="button" id="edit_${project.id}" onClick='edit(${project.id})' class="btn btn-primary btn-sm"><i class="fas fa-pen" style="width: 16px;" aria-hidden="true"></i></button>
+                </td>
             </tr>
             % endfor
         </table>
