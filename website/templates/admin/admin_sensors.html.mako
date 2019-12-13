@@ -17,6 +17,17 @@ function show_confirm(id, name, url) {
     $("#modal-btn-yes").attr("onclick", "location.href='" + url + "'");
 }
 
+function edit(id, url) {
+    name = $("#sensor_name_"+id).html()
+    secret = $("#sensor_secret_"+id).html()
+    $("#sensor_name_"+id).html('<input type="text" name="sensor_name" form="sensor_'+id+'" value="' + name + '">')
+    $("#sensor_secret_"+id).html('<input type="text" name="sensor_secret" form="sensor_'+id+'" value="' + secret + '">')
+    $("#edit_"+id).html('<i class="fas fa-save" style="width: 16px;" aria-hidden="true"></i>')
+    $("#edit_"+id).attr("onclick", "form.submit()")
+    $("#edit_"+id).attr("form", "sensor_"+id)
+    $("#delete_"+id).prop("disabled", true)
+}
+
 </script>
 
 <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="confirm-modal">
@@ -47,11 +58,16 @@ function show_confirm(id, name, url) {
             </tr></thead>
             % for sensor in sensors:
             <tr>
+                <form id="sensor_${sensor.id}" method="post" action="${url_for('admin.edit_sensor', id=sensor.id)}"></form>
                 <td>${sensor.id}</td>
-                <td>${sensor.name}</td>
-                <td>${sensor.secret}</td>
+                <td id="sensor_name_${sensor.id}">${sensor.name}</td>
+                <td id="sensor_secret_${sensor.id}">${sensor.secret}</td>
                 <td>${sensor.owner}</td>
-                <td><button onClick='show_confirm(${sensor.id}, "${sensor.name}", "${url_for('admin.delete_sensor', id=sensor.id)}")' class="btn btn-danger"><i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i></a></td>
+                <td>
+                    <button type="button" id="delete_${sensor.id}" onClick='show_confirm(${sensor.id}, "${sensor.name}", "${url_for('admin.delete_sensor', id=sensor.id)}")' class="btn btn-danger btn-sm"><i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i></button>
+                    &nbsp;
+                    <button type="button" id="edit_${sensor.id}" onClick='edit(${sensor.id})' class="btn btn-primary btn-sm"><i class="fas fa-pen" style="width: 16px;" aria-hidden="true"></i></button>
+                </td>
             </tr>
             % endfor
         </table>

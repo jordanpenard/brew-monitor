@@ -122,6 +122,17 @@ class Sensor:
         # lastrowid is the last successful insert on that cursor
         return cursor.lastrowid
 
+    def edit(id, new_name, new_secret):
+        with config().db_connection() as db_conn:
+            db_conn.execute(
+                """
+                Update Sensor
+                set name=?, secret=?
+                where id=?;
+                """,
+                (new_name,new_secret,id)
+            )
+
     def verify_identity(self, request_secret):
         # type: (str) -> boot
         # Return true if the secret provided by the request matches the sensor's secret from the db
@@ -283,6 +294,17 @@ class Project:
                 Delete from Project where id=?;
                 """,
                 (id,)
+            )
+
+    def edit(id, new_name):
+        with config().db_connection() as db_conn:
+            db_conn.execute(
+                """
+                Update Project
+                set name=?
+                where id=?;
+                """,
+                (new_name,id)
             )
 
     @classmethod
