@@ -57,3 +57,18 @@ def delete_project(id):
 def delete_sensor(id):
     Sensor.delete(id)
     return redirect(url_for('admin.admin_sensors'))
+
+@admin_bp.route('/projects/edit/<id>', methods=['POST'])
+@admin_required
+def edit_project(id):
+    name = request.form.get('project_name')
+    Project.edit(id, name)
+    return redirect(url_for('admin.admin_projects'))
+
+@admin_bp.route('/sensors/edit/<id>', methods=['POST'])
+@admin_required
+def edit_sensor(id):
+    name = request.form.get('sensor_name')
+    secret = request.form.get('sensor_secret')
+    Sensor.edit(id, name, secret)
+    return redirect(url_for('admin.admin_sensors'))
