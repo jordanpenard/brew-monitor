@@ -19,11 +19,22 @@ function show_confirm(id, name, url) {
 
 function edit(id, url) {
     name = $("#project_name_"+id).html()
+    owner = $("#project_owner_"+id).html()
+
     $("#project_name_"+id).html('<input type="text" name="project_name" form="project_'+id+'" value="' + name + '">')
     $("#edit_"+id).html('<i class="fas fa-save" style="width: 16px;" aria-hidden="true"></i>')
     $("#edit_"+id).attr("onclick", "form.submit()")
     $("#edit_"+id).attr("form", "project_"+id)
     $("#delete_"+id).prop("disabled", true)
+
+    owner_select = '<select name="project_owner_id" form="project_'+id+'">'
+    % for user in users:
+        owner_select += '<option id="owner_select_${user['username']}" value="${user['id']}">${user['username']}</option>'
+    % endfor
+    owner_select += '</select>'
+    
+    $("#project_owner_"+id).html(owner_select)
+    $("#owner_select_" + owner).prop("selected", true)
 }
 
 </script>

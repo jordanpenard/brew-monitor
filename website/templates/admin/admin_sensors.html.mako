@@ -20,12 +20,23 @@ function show_confirm(id, name, url) {
 function edit(id, url) {
     name = $("#sensor_name_"+id).html()
     secret = $("#sensor_secret_"+id).html()
+    owner = $("#sensor_owner_"+id).html()
+
     $("#sensor_name_"+id).html('<input type="text" name="sensor_name" form="sensor_'+id+'" value="' + name + '">')
     $("#sensor_secret_"+id).html('<input type="text" name="sensor_secret" form="sensor_'+id+'" value="' + secret + '">')
     $("#edit_"+id).html('<i class="fas fa-save" style="width: 16px;" aria-hidden="true"></i>')
     $("#edit_"+id).attr("onclick", "form.submit()")
     $("#edit_"+id).attr("form", "sensor_"+id)
     $("#delete_"+id).prop("disabled", true)
+    
+    owner_select = '<select name="sensor_owner_id" form="sensor_'+id+'">'
+    % for user in users:
+        owner_select += '<option id="owner_select_${user['username']}" value="${user['id']}">${user['username']}</option>'
+    % endfor
+    owner_select += '</select>'
+    
+    $("#sensor_owner_"+id).html(owner_select)
+    $("#owner_select_" + owner).prop("selected", true)
 }
 
 </script>
@@ -65,7 +76,7 @@ function edit(id, url) {
                 <td>${sensor.id}</td>
                 <td id="sensor_name_${sensor.id}">${sensor.name}</td>
                 <td id="sensor_secret_${sensor.id}">${sensor.secret}</td>
-                <td>${sensor.owner}</td>
+                <td id="sensor_owner_${sensor.id}">${sensor.owner}</td>
                 <td>
                     <button type="button" id="delete_${sensor.id}" onClick='show_confirm(${sensor.id}, "${sensor.name}", "${url_for('admin.delete_sensor', id=sensor.id)}")' class="btn btn-danger btn-sm"><i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i></button>
                     &nbsp;

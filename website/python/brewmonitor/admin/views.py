@@ -39,12 +39,12 @@ def delete_user(id):
 @admin_bp.route('/projects')
 @admin_required
 def admin_projects():
-    return render_template('admin_projects.html.mako', projects=access.get_projects())
+    return render_template('admin_projects.html.mako', projects=access.get_projects(), users=User.get_users())
 
 @admin_bp.route('/sensors')
 @admin_required
 def admin_sensors():
-    return render_template('admin_sensors.html.mako', sensors=access.get_sensors())
+    return render_template('admin_sensors.html.mako', sensors=access.get_sensors(), users=User.get_users())
 
 @admin_bp.route('/projects/delete/<id>')
 @admin_required
@@ -62,7 +62,8 @@ def delete_sensor(id):
 @admin_required
 def edit_project(id):
     name = request.form.get('project_name')
-    Project.edit(id, name)
+    owner_id = request.form.get('project_owner_id')
+    Project.edit(id, name,owner_id)
     return redirect(url_for('admin.admin_projects'))
 
 @admin_bp.route('/sensors/edit/<id>', methods=['POST'])
@@ -70,5 +71,6 @@ def edit_project(id):
 def edit_sensor(id):
     name = request.form.get('sensor_name')
     secret = request.form.get('sensor_secret')
-    Sensor.edit(id, name, secret)
+    owner_id = request.form.get('sensor_owner_id')
+    Sensor.edit(id, name, secret, owner_id)
     return redirect(url_for('admin.admin_sensors'))
