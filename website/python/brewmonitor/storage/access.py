@@ -122,15 +122,15 @@ class Sensor:
         # lastrowid is the last successful insert on that cursor
         return cursor.lastrowid
 
-    def edit(id, new_name, new_secret):
+    def edit(id, new_name, new_secret, new_owner_id):
         with config().db_connection() as db_conn:
             db_conn.execute(
                 """
                 Update Sensor
-                set name=?, secret=?
+                set name=?, secret=?, owner=?
                 where id=?;
                 """,
-                (new_name,new_secret,id)
+                (new_name,new_secret,new_owner_id,id)
             )
 
     def verify_identity(self, request_secret):
@@ -296,15 +296,15 @@ class Project:
                 (id,)
             )
 
-    def edit(id, new_name):
+    def edit(id, new_name, new_owner_id):
         with config().db_connection() as db_conn:
             db_conn.execute(
                 """
                 Update Project
-                set name=?
+                set name=?, owner=?
                 where id=?;
                 """,
-                (new_name,id)
+                (new_name,new_owner_id,id)
             )
 
     @classmethod
