@@ -66,7 +66,6 @@ function edit(id, url) {
                 <th scope="col">Name</th>
                 <th scope="col">Owner</th>
                 <th scope="col"></th>
-                <th scope="col"></th>
             </tr></thead>
             % for project in projects:
             <tr>
