@@ -5,6 +5,8 @@
  */
 
 #include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
+
 #include <Wire.h>
 
 #include "config.h"
@@ -52,7 +54,8 @@ void connect_to_wifi() {
 }
 
 void http_post_request(const char* hostname, uint16_t port, String request, String data) {
-  WiFiClient client;
+  BearSSL::WiFiClientSecure client;
+  client.setInsecure();
 
   //Serial.print(String("[Connecting to ") + hostname + String(" ... "));
   while (!client.connect(hostname, port)) {
@@ -76,6 +79,7 @@ void http_post_request(const char* hostname, uint16_t port, String request, Stri
                "Host: " + hostname + "\r\n" +
                "Content-Type: application/json\r\n" +
                "Content-Length: " + data.length() + "\r\n" +
+               "User-Agent: ESP8266\r\n" +
                "\r\n" + data);
   /*
   Serial.println("[Response:]");
