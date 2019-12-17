@@ -184,7 +184,8 @@ void loop() {
 
   http_post_request(SERVER, PORT, String("storage/sensor/add_data"), 
           String("{\"sensor_id\": ") + SENSOR_ID + 
-          String(", \"angle\": \"") + Tilt + 
+          String(", \"secret\": \"") + SENSOR_SECRET +
+          String("\", \"angle\": \"") + Tilt + 
           String("\", \"temperature\": \"") + Temp + 
           String("\", \"battery\": \"") + battery + String("\"}"));
 

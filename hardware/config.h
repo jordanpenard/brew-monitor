@@ -6,7 +6,10 @@
 // Server details
 #define SERVER "<hostname>"
 #define PORT <port>
+
+// Sensor details
 #define SENSOR_ID <ID>
+#define SENSOR_SECRET <secret>
 
 // Accelerometer
 #define MPU 0x68
