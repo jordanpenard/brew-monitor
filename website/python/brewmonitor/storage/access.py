@@ -18,12 +18,24 @@ class Sensor:
     owner = attr.ib(type=str)
     last_active = attr.ib(type=datetime, default=None)  # in SQL we would get that from the datapoints
     last_battery = attr.ib(type=str, default=None)
+    max_battery = attr.ib(type=float, default=None)
+    min_battery = attr.ib(type=float, default=None)
 
     def last_active_str(self):
         # type: () -> str
         if self.last_active is not None:
             return self.last_active.isoformat()
         return 'No data'
+
+    def last_battery_pct(self):
+        # type: () -> int
+        if self.last_battery is not None and self.max_battery is not None and self.min_battery is not None:
+            if self.last_battery > self.max_battery:
+                return 100
+            if self.last_battery < self.min_battery:
+                return 0
+            return int(((self.last_battery - self.min_battery)*100) / (self.max_battery - self.min_battery))
+        return None
 
     @classmethod
     def row_factory(cls, _cursor, _row):
@@ -37,6 +49,8 @@ class Sensor:
             d['owner'],
             datetime.fromisoformat(d['last_active']) if d['last_active'] else None,
             d['last_battery'],
+            d['max_battery'],
+            d['min_battery'],
         )
 
     @classmethod
@@ -45,7 +59,7 @@ class Sensor:
         # TODO(tr) Get last battery as well
         cursor = db_conn.execute(
             '''
-            select id, name, secret, 
+            select id, name, secret, max_battery, min_battery, 
                 (select battery from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_battery,
                 (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active,
                 (select username from User where id = Sensor.owner limit 1) as owner
@@ -61,7 +75,7 @@ class Sensor:
         # type: (SQLConnection, int) -> Optional[Sensor]
         sens_cursor = db_conn.execute(
             '''
-            select id, name, secret, 
+            select id, name, secret, max_battery, min_battery, 
                 (select battery from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_battery,
                 (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active,
                 (select username from User where id = Sensor.owner limit 1) as owner
@@ -122,15 +136,15 @@ class Sensor:
         # lastrowid is the last successful insert on that cursor
         return cursor.lastrowid
 
-    def edit(id, new_name, new_secret, new_owner_id):
+    def edit(id, new_name, new_secret, new_owner_id, new_max_battery, new_min_battery):
         with config().db_connection() as db_conn:
             db_conn.execute(
                 """
                 Update Sensor
-                set name=?, secret=?, owner=?
+                set name=?, secret=?, owner=?, max_battery=?, min_battery=?
                 where id=?;
                 """,
-                (new_name,new_secret,new_owner_id,id)
+                (new_name,new_secret,new_owner_id,new_max_battery,new_min_battery,id)
             )
 
     def verify_identity(self, request_secret):
