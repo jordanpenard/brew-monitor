@@ -30,18 +30,35 @@
                     <span style="vertical-align: middle;" class="badge badge-success"><i aria-hidden="true" class="fas fa-link"></i></span>
                 % endif
                 % if item.is_active():
-                    <span style="vertical-align: middle;" class="badge badge-primary" data-toggle="tooltip" data-placement="top" title="${item.last_active_str()}">Active</span>
-                % else:
-                    <span style="vertical-align: middle;" class="badge badge-secondary" data-toggle="tooltip" data-placement="top" title="${item.last_active_str()}">Inactive</span>
+                    <i style="color: #007bff" aria-hidden="true" class="fas fa-broadcast-tower" data-toggle="tooltip" data-placement="top" title="${item.last_active_str()}"></i>
                 % endif
+                % if item.last_battery and item.max_battery and item.min_battery:
+                    <%
+                        battery_pct = item.last_battery_pct()
+                        if battery_pct > 80:
+                            battery_logo = "fa-battery-full"
+                            battery_color = "#28a745"
+                        elif battery_pct > 60:
+                            battery_logo = "fa-battery-three-quarters"
+                            battery_color = "#28a745"
+                        elif battery_pct > 40:
+                            battery_logo = "fa-battery-half"
+                            battery_color = "orange"
+                        elif battery_pct > 20:
+                            battery_logo = "fa-battery-quarter"
+                            battery_color = "orange"
+                        else:
+                            battery_logo = "fa-battery-empty"
+                            battery_color = "red"
+                    %>
+                    <i class="fas ${battery_logo}" style="color: ${battery_color}; float: right; margin: 5px 0px 0px 5px;" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="${battery_pct}%"></i>
+                % endif
+                
             </div>
           </div>
           <div class="card-body">
             <p class="card-text">
-                Owner : ${item.owner}<br>
-                % if item.last_battery:
-                    Battery : ${item.last_battery}V<br>
-                % endif
+                Owner : ${item.owner}
             </p>
           </div>
         </div>

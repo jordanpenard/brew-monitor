@@ -72,5 +72,7 @@ def edit_sensor(id):
     name = request.form.get('sensor_name')
     secret = request.form.get('sensor_secret')
     owner_id = request.form.get('sensor_owner_id')
-    Sensor.edit(id, name, secret, owner_id)
+    max_battery = request.form.get('sensor_max_battery')
+    min_battery = request.form.get('sensor_min_battery')
+    Sensor.edit(id, name, secret, owner_id, max_battery, min_battery)
     return redirect(url_for('admin.admin_sensors'))

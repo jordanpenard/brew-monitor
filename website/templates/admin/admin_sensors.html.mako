@@ -21,9 +21,13 @@ function edit(id, url) {
     name = $("#sensor_name_"+id).html()
     secret = $("#sensor_secret_"+id).html()
     owner = $("#sensor_owner_"+id).html()
+    max_battery = $("#sensor_max_battery_"+id).html()
+    min_battery = $("#sensor_min_battery_"+id).html()
 
     $("#sensor_name_"+id).html('<input type="text" name="sensor_name" form="sensor_'+id+'" value="' + name + '">')
     $("#sensor_secret_"+id).html('<input type="text" name="sensor_secret" form="sensor_'+id+'" value="' + secret + '">')
+    $("#sensor_max_battery_"+id).html('<input type="text" name="sensor_max_battery" style="width:100px" form="sensor_'+id+'" value="' + max_battery + '">')
+    $("#sensor_min_battery_"+id).html('<input type="text" name="sensor_min_battery" style="width:100px" form="sensor_'+id+'" value="' + min_battery + '">')
     $("#edit_"+id).html('<i class="fas fa-save" style="width: 16px;" aria-hidden="true"></i>')
     $("#edit_"+id).attr("onclick", "form.submit()")
     $("#edit_"+id).attr("form", "sensor_"+id)
@@ -68,6 +72,8 @@ function edit(id, url) {
                 <th scope="col">Name</th>
                 <th scope="col">Secret</th>
                 <th scope="col">Owner</th>
+                <th scope="col">Max battery</th>
+                <th scope="col">Min battery</th>
                 <th scope="col"></th>
             </tr></thead>
             % for sensor in sensors:
@@ -77,6 +83,8 @@ function edit(id, url) {
                 <td id="sensor_name_${sensor.id}">${sensor.name}</td>
                 <td id="sensor_secret_${sensor.id}">${sensor.secret}</td>
                 <td id="sensor_owner_${sensor.id}">${sensor.owner}</td>
+                <td id="sensor_max_battery_${sensor.id}">${sensor.max_battery}</td>
+                <td id="sensor_min_battery_${sensor.id}">${sensor.min_battery}</td>
                 <td>
                     <button type="button" id="delete_${sensor.id}" onClick='show_confirm(${sensor.id}, "${sensor.name}", "${url_for('admin.delete_sensor', id=sensor.id)}")' class="btn btn-danger btn-sm"><i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i></button>
                     &nbsp;

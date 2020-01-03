@@ -29,6 +29,9 @@ def initialise_db(config):
                 name text not null,
                 secret text not null,
                 owner integer not null,
+                max_battery float,
+                min_battery float,
+                battery float,
                 foreign key(owner) references User(id)
             );
             '''
