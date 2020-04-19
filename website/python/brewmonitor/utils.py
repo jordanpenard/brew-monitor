@@ -1,24 +1,20 @@
 from http import HTTPStatus
-from typing import Optional, Iterable, Tuple, TYPE_CHECKING, List
+from typing import Optional, Iterable, Tuple, List, Any
 
 import attr
-from flask import Response, current_app
+from flask import Response
 from flask_csv import send_csv
 
 from brewmonitor import json
-
-if TYPE_CHECKING:
-    from brewmonitor.storage.access import DataPoints
-    from brewmonitor.configuration import Configuration
+from brewmonitor.storage import access
 
 
-def config():
-    # type: () -> Configuration
-    return current_app.config['brewmonitor config']
+def json_response(
+    content: Any,
+    status: int = HTTPStatus.OK,
+    headers: Optional[Iterable[Tuple[str, str]]] = None,
+) -> Response:
 
-
-def json_response(content, status=200, headers=None):
-    # type: (..., int, Optional[Iterable[Tuple[str, str]]]) -> Response
     if headers is None:
         headers = []
     response = Response(json.dumps(content), status)
@@ -28,8 +24,7 @@ def json_response(content, status=200, headers=None):
     return response
 
 
-def make_csv(data, filename):
-    # type: (List[attr.s], str) -> Response
+def make_csv(data: List[attr.s], filename: str) -> Response:
 
     headers = set()
     entries = []
@@ -41,8 +36,7 @@ def make_csv(data, filename):
     return send_csv(entries, filename, headers)
 
 
-def export_data(filename, _format, data):
-    # type: (str, str, List[DataPoints]) -> Response
+def export_data(filename: str, _format: str, data: List[access.DataPoints]) -> Response:
 
     if _format == 'json':
         output = [attr.asdict(d) for d in data]

@@ -61,17 +61,19 @@ def get_project(project_id):
 
     management_link = None
     if current_user.is_authenticated:
-        management_link=url_for('accessor.change_project_sensor', project_id=project_id)
+        management_link = url_for('accessor.change_project_sensor', project_id=project_id)
 
     delete_next = url_for('accessor.get_project', project_id=project_id, _anchor=f'{project.id}_table')
     
     datatable, plot = build_view_data(
         'project',
         data_points=project.data_points,
-        delete_next=delete_next)
+        delete_next=delete_next,
+    )
     
     return render_template(
         'accessor/view_project.html.mako',
+        elem_obj=project,
         elem_name=project.name,
         elem_id=project.id,
         elem_links=prev_link_sensors.values(),
@@ -81,7 +83,7 @@ def get_project(project_id):
         linked_elem=linked_sensor,
         management_link=management_link,
         management_items=management_items or None,
-        allow_delete_datapoints=current_user.is_authenticated
+        allow_delete_datapoints=current_user.is_authenticated,
     )
 
 
@@ -108,7 +110,7 @@ def add_project():
 def change_project_sensor(project_id):
 
     sensor_id = request.form.get('sensor_id', 'null')  # If null we only detach the sensor
-    next = request.args.get('next') or url_for('accessor.get_project', project_id=project_id)
+    next_ = request.args.get('next') or url_for('accessor.get_project', project_id=project_id)
 
     project = access.get_project_data(project_id)
     if project is None:
@@ -122,13 +124,13 @@ def change_project_sensor(project_id):
             abort(HTTPStatus.NOT_FOUND)
 
     access.update_project_sensor(project, sensor_id)
-    return redirect(next)
+    return redirect(next_)
 
 
 @accessor_bp.route('/datapoint/remove/<datapoint_id>', methods=['POST'])
 @login_required
 def remove_datapoint(datapoint_id):
 
-    next = request.args.get('next') or url_for('accessor.all_projects')
+    next_ = request.args.get('next') or url_for('accessor.all_projects')
     access.remove_datapoint(datapoint_id)
-    return redirect(next)
+    return redirect(next_)

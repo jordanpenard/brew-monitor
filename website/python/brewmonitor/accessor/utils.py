@@ -1,23 +1,19 @@
-from typing import List, Dict, TYPE_CHECKING, Optional
+from typing import List, Dict, Optional, Tuple, AnyStr
 
-from flask_mako import render_template
-from flask import url_for, Response
-from flask_login import current_user
+from flask import url_for
 
-
-if TYPE_CHECKING:
-    from brewmonitor.storage import access
+from brewmonitor.storage import access
 
 
 def build_view_data(
-    elem_name,  # type: str
-    data_points,  # type: List[access.DataPoints]
-    delete_next=None,  # type: Optional[str]
-):
-    # type: (...) -> Response
+    elem_name: str,
+    data_points: List[access.DataPoints],
+    delete_next: Optional[str] = None,
+) -> Tuple[List, Dict]:
+
     datatable = []
 
-    def _new_sensor(sensor_name):
+    def _new_sensor(sensor_name: str) -> List:
         temperature_data = {
             'x': [],
             'y': [],
@@ -64,11 +60,11 @@ def build_view_data(
             'yaxis3': {
                 'title': 'Battery (V)',
                 'visible': False,
-            }
-        }
+            },
+        },
     }
 
-    def _add(data, x, y):
+    def _add(data: Dict, x: AnyStr, y: AnyStr):
         data['x'].append(x)
         data['y'].append(y)
 

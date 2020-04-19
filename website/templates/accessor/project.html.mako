@@ -14,8 +14,30 @@
 
 ## TODO(tr) Should contain the list of sensors/projects + a button to sensors/projects.
 
+<%def name="render_icons(linked_sensor, is_active, last_active_str)">
+<div style="float: right;">
+% if linked_sensor is not None:
+    <span style="vertical-align: middle;" class="badge badge-success" title="Sensor id ${linked_sensor | h}">
+        <i aria-hidden="true" class="fas fa-link"></i>
+    </span>
+% endif
+<%
+    if is_active:
+        badge_class = 'badge-primary'
+        label = 'Active'
+    else:
+        badge_class = 'badge-secondary'
+        label = 'Inactive'
+%>
+    <span style="vertical-align: middle;" class="badge ${badge_class}" data-toggle="tooltip" data-placement="top" title="${last_active_str}">
+        ${label | h}
+    </span>
+</div>
+</%def>
+
+
 <%def name="render_project_card(item)">
-    <script>
+    <script type="text/javascript">
         $(function () {
           $('[data-toggle="tooltip"]').tooltip()
         })
@@ -26,14 +48,11 @@
             <div style="float: left;">
                 <a href="${item.get_link()}">${item.get_name()}</a>
             </div><div style="float: right;">
-                % if item.is_linked():
-                    <span style="vertical-align: middle;" class="badge badge-success"><i aria-hidden="true" class="fas fa-link"></i></span>
-                % endif
-                % if item.is_active():
-                    <span style="vertical-align: middle;" class="badge badge-primary" data-toggle="tooltip" data-placement="top" title="${item.last_active_str()}">Active</span>
-                % else:
-                    <span style="vertical-align: middle;" class="badge badge-secondary" data-toggle="tooltip" data-placement="top" title="${item.last_active_str()}">Inactive</span>
-                % endif
+                ${render_icons(
+                    item.active_sensor,
+                    item.is_active(),
+                    item.last_active_str(),
+                )}
             </div>
           </div>
           <div class="card-body">

@@ -1,13 +1,11 @@
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from brewmonitor.configuration import Configuration
+from brewmonitor.configuration import Configuration
 
 
-def initialise_db(config):
-    # type: (Configuration) -> None
+def initialise_db(config: Configuration):
 
     if config.sqlite_file:
+        print(f'Using SQL lite {config.sqlite_file}')
         open(config.sqlite_file, 'a+').close()  # Ensure the file exists
 
     with config.db_connection() as conn:
