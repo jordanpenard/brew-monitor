@@ -4,11 +4,7 @@ from http import HTTPStatus
 import attr
 from flask import Blueprint, request
 
-from brewmonitor.storage.access import (
-    get_active_project_for_sensor,
-    DataPoints,
-    insert_datapoints,
-)
+from brewmonitor.storage import access
 from brewmonitor.utils import json_response
 
 storage_bp = Blueprint(
@@ -17,6 +13,7 @@ storage_bp = Blueprint(
     template_folder='../../../templates/storage/',
     url_prefix='/storage'
 )
+
 
 @storage_bp.route('/sensor/add_data', methods=['POST'])
 def add_data():
@@ -27,33 +24,32 @@ def add_data():
     json_args = request.get_json()
     print (f'Received json_args={json_args}')
 
-    if 'secret' not in json_args:
-        return json_response({"errors": [f"Missing mendatory field 'secret'"]}, HTTPStatus.NOT_FOUND)
-    
-    request_secret = json_args.pop('secret')
+    request_secret = json_args.pop('secret', None)
+    if request_secret is None:
+        return json_response({"errors": [f"Missing mandatory field 'secret'"]}, HTTPStatus.BAD_REQUEST)
 
     if 'timestamp' not in json_args:
         json_args['timestamp'] = datetime.now()
 
     try:
-        d = DataPoints(
+        d = access.DataPoints(
             project_id=None,  # populated once we got the sensor id
             **json_args
         )
     except Exception as e:
         return json_response({"errors": [f"Failed to construct datapoint: {e}"]}, HTTPStatus.BAD_REQUEST)
 
-    sensor, project = get_active_project_for_sensor(d.sensor_id)
+    sensor, project = access.get_active_project_for_sensor(d.sensor_id)
     if sensor is None:
         return json_response({"errors": [f"Did not find the sensor {d.sensor_id!r}"]}, HTTPStatus.NOT_FOUND)
 
     if not sensor.verify_identity(request_secret):
-        return json_response({"errors": [f"Invalide sensor identification"]}, HTTPStatus.NOT_FOUND)
+        return json_response({"errors": [f"Invalid sensor identification"]}, HTTPStatus.NOT_FOUND)
 
     if project is not None:
         d.project_id = project.id
 
-    insert_datapoints([d])
+    access.insert_datapoints([d])
 
     return json_response(
         {"created": [attr.asdict(d)]},

@@ -14,8 +14,23 @@
 
 ## TODO(tr) Should contain the list of sensors/projects + a button to sensors/projects.
 
+<%def name="render_icons(linked_project, last_active_str, battery_info)">
+<div style="float: right;">
+% if linked_project is not None:
+    <span style="vertical-align: middle;" class="badge badge-success" title="Project id ${linked_project | h}">
+        <i aria-hidden="true" class="fas fa-link"></i>
+    </span>
+% endif
+% if last_active_str:
+    <i aria-hidden="true" class="fas fa-podcast" data-toggle="tooltip" data-placement="top" title="${last_active_str}"></i>
+% endif
+    <i class="fas ${battery_info['icon']}" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="${battery_info['tooltip']}"></i>
+</div>
+</%def>
+
+
 <%def name="render_sensor_card(item)">
-    <script>
+    <script type="text/javascript">
         $(function () {
           $('[data-toggle="tooltip"]').tooltip()
         })
@@ -25,36 +40,12 @@
           <div class="card-header">
             <div style="float: left;">
                 <a href="${item.get_link()}">${item.get_name()}</a>
-            </div><div style="float: right;">
-                % if item.is_linked():
-                    <span style="vertical-align: middle;" class="badge badge-success"><i aria-hidden="true" class="fas fa-link"></i></span>
-                % endif
-                % if item.is_active():
-                    <i style="color: #007bff" aria-hidden="true" class="fas fa-broadcast-tower" data-toggle="tooltip" data-placement="top" title="${item.last_active_str()}"></i>
-                % endif
-                % if item.last_battery and item.max_battery and item.min_battery:
-                    <%
-                        battery_pct = item.last_battery_pct()
-                        if battery_pct > 80:
-                            battery_logo = "fa-battery-full"
-                            battery_color = "#28a745"
-                        elif battery_pct > 60:
-                            battery_logo = "fa-battery-three-quarters"
-                            battery_color = "#28a745"
-                        elif battery_pct > 40:
-                            battery_logo = "fa-battery-half"
-                            battery_color = "orange"
-                        elif battery_pct > 20:
-                            battery_logo = "fa-battery-quarter"
-                            battery_color = "orange"
-                        else:
-                            battery_logo = "fa-battery-empty"
-                            battery_color = "red"
-                    %>
-                    <i class="fas ${battery_logo}" style="color: ${battery_color}; float: right; margin: 5px 0px 0px 5px;" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="${battery_pct}%"></i>
-                % endif
-                
             </div>
+            ${render_icons(
+                item.is_linked(),
+                item.last_active_str() if item.is_active() else None,
+                item.battery_info(),
+            )}
           </div>
           <div class="card-body">
             <p class="card-text">

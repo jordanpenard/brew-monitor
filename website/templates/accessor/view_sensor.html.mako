@@ -8,7 +8,16 @@
 </%block>
 
 <%block name="title">
-    <h1>${elem_name | h} (project_id=${elem_id | h})</h1>    
+    <h1>
+        ${elem_name | h} (sensor_id=${elem_id | h})
+    % if elem_obj:
+        ${sensor.render_icons(
+            elem_obj.linked_project,
+            elem_obj.last_active_str() if elem_obj.is_active() else None,
+            elem_obj.battery_info(),
+        )}
+    % endif
+    </h1>
 </%block>
 
 <h2>Linked project</h2>

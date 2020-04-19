@@ -8,7 +8,7 @@
     <h1 class="title">Admin projects</h1>
 </%block>
 
-<script>
+<script type="text/javascript">
 
 function show_confirm(id, name, url) {
     $("#project_id").html(id)
@@ -44,15 +44,17 @@ function edit(id, url) {
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="popup-message"></h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <input type="hidden" id="project_id"></input>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <input type="hidden" id="project_id" />
       </div>
       <div class="modal-body">
           <p>This will delete all associated data</p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-danger" id="modal-btn-yes">Yes</a>
-        <button class="btn btn-secondary" data-dismiss="modal" id="modal-btn-no">No</a>
+        <button class="btn btn-danger" id="modal-btn-yes">Yes</button>
+        <button class="btn btn-secondary" data-dismiss="modal" id="modal-btn-no">No</button>
       </div>
     </div>
   </div>
@@ -61,25 +63,31 @@ function edit(id, url) {
 <div class="column is-4 is-offset-4">
     <div class="box">
         <table class="table" id="project_table">
-            <thead><tr>
-                <th scope="col">ID</th>
-                <th scope="col">Name</th>
-                <th scope="col">Owner</th>
-                <th scope="col"></th>
-            </tr></thead>
-            % for project in projects:
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Owner</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+        % for project in projects:
             <tr>
                 <form id="project_${project.id}" method="post" action="${url_for('admin.edit_project', id=project.id)}"></form>
                 <td>${project.id}</td>
                 <td id="project_name_${project.id}">${project.name}</td>
                 <td id="project_owner_${project.id}">${project.owner}</td>
                 <td>
-                    <button type="button" id="delete_${project.id}" onClick='show_confirm(${project.id}, "${project.name}", "${url_for('admin.delete_project', id=project.id)}")' class="btn btn-danger btn-sm"><i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i></button>
+                    <button type="button" id="delete_${project.id}" onClick='show_confirm(${project.id}, "${project.name}", "${url_for('admin.delete_project', id=project.id)}")' class="btn btn-danger btn-sm">
+                      <i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i>
+                    </button>
                     &nbsp;
-                    <button type="button" id="edit_${project.id}" onClick='edit(${project.id})' class="btn btn-primary btn-sm"><i class="fas fa-pen" style="width: 16px;" aria-hidden="true"></i></button>
+                    <button type="button" id="edit_${project.id}" onClick='edit(${project.id})' class="btn btn-primary btn-sm">
+                      <i class="fas fa-pen" style="width: 16px;" aria-hidden="true"></i>
+                    </button>
                 </td>
             </tr>
-            % endfor
+        % endfor
         </table>
     </div>
 </div>
