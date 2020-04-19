@@ -8,7 +8,6 @@ from werkzeug.exceptions import abort
 from brewmonitor.accessor._app import accessor_bp
 from brewmonitor.accessor.utils import build_view_data
 from brewmonitor.storage import access
-from brewmonitor.storage.access import get_active_project_for_sensor
 from brewmonitor.utils import export_data
 
 
@@ -29,7 +28,7 @@ def get_sensor(sensor_id):
     if sensor is None:
         abort(HTTPStatus.NOT_FOUND)
 
-    _, linked_project = get_active_project_for_sensor(sensor_id)
+    _, linked_project = access.get_active_project_for_sensor(sensor_id)
 
     prev_link_projects = sensor.projects
     management_link = None
@@ -37,7 +36,7 @@ def get_sensor(sensor_id):
         # pop the active project so it doesn't show twice in "linked project" and "previously linked project" sections
         if linked_project.id in prev_link_projects:
             prev_link_projects.pop(linked_project.id)
-        # So that it's undefined if we don't have a linked project.
+        # Def is None so that it's undefined if we don't have a linked project.
         if current_user.is_authenticated:
             management_link = url_for('accessor.change_project_sensor', project_id=linked_project.id, next=request.path)
 
@@ -51,15 +50,17 @@ def get_sensor(sensor_id):
         for _format in ['CSV', 'JSON']
     ]
 
-    delete_next=url_for('accessor.get_sensor', sensor_id=sensor_id, _anchor=f'{sensor.id}_table'),
+    delete_next = url_for('accessor.get_sensor', sensor_id=sensor_id, _anchor=f'{sensor.id}_table')
 
     datatable, plot = build_view_data(
         'sensor',
         data_points=sensor.data_points,
-        delete_next=delete_next)
+        delete_next=delete_next,
+    )
     
     return render_template(
         'accessor/view_sensor.html.mako',
+        elem_obj=sensor,
         elem_name=sensor.name,
         elem_id=sensor.id,
         elem_links=prev_link_projects.values(),
@@ -68,7 +69,7 @@ def get_sensor(sensor_id):
         plot=plot,
         linked_elem=linked_project,
         management_link=management_link,
-        allow_delete_datapoints=current_user.is_authenticated
+        allow_delete_datapoints=current_user.is_authenticated,
     )
 
 

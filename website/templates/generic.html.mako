@@ -54,6 +54,36 @@
                 margin-top: 30px;
                 margin-bottom: 30px;
             }
+            .fa-battery-full {
+                color: #28a745;
+                float: right;
+                margin: 5px 0px 0px 5px;
+            }
+            .fa-battery-three-quarters {
+                color: #28a745;
+                float: right;
+                margin: 5px 0px 0px 5px;
+            }
+            .fa-battery-half {
+                color: orange;
+                float: right;
+                margin: 5px 0px 0px 5px;
+            }
+            .fa-battery-quarter {
+                color: orange;
+                float: right;
+                margin: 5px 0px 0px 5px;
+            }
+            .fa-battery-empty {
+                color: red;
+                float: right;
+                margin: 5px 0px 0px 5px;
+            }
+            .fa-podcast {
+                color: #007bff;
+                float: right;
+                margin: 5px 0px 0px 5px;
+            }
         </style>
     </%block>
 </head>
@@ -61,7 +91,7 @@
     <div class="header">
         <%block name="header">
             <nav class="navbar navbar-inverse navbar-expand-lg navbar-light bg-light">
-                <a class="navbar-brand" href="${url_for('home.index')}">Brew Monitor</a>
+                <a class="navbar-brand" href="${url_for('home.home')}">Brew Monitor</a>
                 ## Make navbar collapsible when the window is too small
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_collapsible" aria-controls="navbar_collapsible" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -74,6 +104,18 @@
                         <li class="nav-item" id="accessor_sensor_nav_item">
                             <a class="nav-link" href="${url_for('accessor.all_sensors')}">Sensor List</a>
                         </li>
+                % if current_user.is_authenticated and current_user.is_admin:
+                        <li class="nav-item dropdown" id="admin_nav_item">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAdmin" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-screwdriver"></i> Admin
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownAdmin">
+                              <a class="dropdown-item" href="${url_for('admin.admin_users')}">Users</a>
+                              <a class="dropdown-item" href="${url_for('admin.admin_projects')}">Projects</a>
+                              <a class="dropdown-item" href="${url_for('admin.admin_sensors')}">Sensor</a>
+                            </div>
+                        </li>
+                    % endif
                     </ul>
                     % if not current_user.is_authenticated:
                         <ul class="nav navbar-nav navbar-right">
@@ -82,25 +124,19 @@
                             </li>
                         </ul>
     		        % else:
+                        ## Show the current user information
                         <ul class="nav navbar-nav navbar-right">
                             <li class="nav-item" id="username_nav_item">
-                                <a class="nav-link disabled">${current_user.name}</a>
+                                <a class="nav-link disabled">
+                                    % if current_user.is_admin:
+                                    <i class="fas fa-screwdriver"></i>
+                                    % endif
+                                    ${current_user.name}
+                                </a>
                             </li>
                             <li class="nav-item" id="logout_nav_item">
                                 <a class="nav-link" href="${url_for('home.logout')}">Logout</a>
                             </li>
-    		                % if current_user.is_admin:
-                                <li class="nav-item dropdown" id="admin_nav_item">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAdmin" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Admin
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownAdmin">
-                                      <a class="dropdown-item" href="${url_for('admin.admin_users')}">Users</a>
-                                      <a class="dropdown-item" href="${url_for('admin.admin_projects')}">Projects</a>
-                                      <a class="dropdown-item" href="${url_for('admin.admin_sensors')}">Sensor</a>
-                                    </div>
-                                </li>
-    		                % endif
                         </ul>
     		        % endif
                 </div>
@@ -121,7 +157,7 @@
         <%block name="footer">
             <footer class="footer">
                 <span class="text-muted" style="padding: 0px 1rem;">
-                    See <a href="https://github.com/jordanpenard/brew-monitor">brew-monitor</a> for licencing.
+                    See <a href="https://github.com/jordanpenard/brew-monitor">jordanpenard/brew-monitor</a> for licencing.
                 </span>
             </footer>
         </%block>

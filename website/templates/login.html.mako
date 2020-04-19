@@ -14,7 +14,7 @@
 <br><br><br>
 <div class="box text-center" style="margin: auto; max-width: 360px; padding: 30px; background-color: #f8f9fa; border-radius: .25rem; border: 1px solid rgba(0,0,0,.125);">
     <form method="POST" action="${url_for('home.check_login')}">
-        <h3 class="mb-3 font-weight-normal">Please sign-in</h1>
+        <h3 class="mb-3 font-weight-normal">Please sign-in</h3>
 
         % if error:
             <div class="alert alert-danger" role="alert">
@@ -22,11 +22,11 @@
             </div>
         % endif
 
-        <input class="form-control mb-3" type="text" name="username" placeholder="Username" autofocus="">
-        <input class="form-control mb-3" type="password" name="password" placeholder="Password">
+        <input class="form-control mb-3" type="text" name="username" placeholder="Username" autofocus="" required>
+        <input class="form-control mb-3" type="password" name="password" placeholder="Password" required>
 
         <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" value="remember" id="remember">
+            <input class="form-check-input" type="checkbox" name="remember" id="remember" value="true">
             <label class="form-check-label" for="remember">Remember me</label>
         </div>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>

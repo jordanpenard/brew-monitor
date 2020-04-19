@@ -11,7 +11,7 @@ from brewmonitor.storage.views import storage_bp
 from brewmonitor.views import home_bp
 from brewmonitor.user import User
 
-from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user 
+from flask_login import LoginManager
 
 
 def make_app(secret_key):
@@ -43,6 +43,6 @@ def make_app(secret_key):
 
     @login_manager.user_loader
     def load_user(id):
-    	return User(int(id))
+    	return User.from_db(config.db_connection(), int(id))
     
     return brewmonitor

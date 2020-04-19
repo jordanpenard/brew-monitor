@@ -31,6 +31,10 @@ python python/make_dummy_data.py
 
 The location of the DB can be changed in _debug_config.yaml_.
 
+Note that the `make_dummy_data` creates two users:
+- toto (admin) with the password 'admin'
+- titi (not admin) with the password pass
+
 Start the flask debug server (from the _website_ folder):
 ```
 python python/run_server
