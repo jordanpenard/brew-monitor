@@ -8,7 +8,7 @@
     <h1 class="title">Admin sensors</h1>
 </%block>
 
-<script>
+<script type="text/javascript">
 
 function show_confirm(id, name, url) {
     $("#sensor_id").html(id);
@@ -51,14 +51,14 @@ function edit(id, url) {
       <div class="modal-header">
         <h5 class="modal-title" id="popup-message"></h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <input type="hidden" id="sensor_id"></input>
+        <input type="hidden" id="sensor_id" />
       </div>
       <div class="modal-body">
           <p>This will delete all associated data</p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-danger" id="modal-btn-yes">Yes</a>
-        <button class="btn btn-secondary" data-dismiss="modal" id="modal-btn-no">No</a>
+        <a class="btn btn-danger" id="modal-btn-yes">Yes</a>
+        <a class="btn btn-secondary" data-dismiss="modal" id="modal-btn-no">No</a>
       </div>
     </div>
   </div>
