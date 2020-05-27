@@ -146,7 +146,7 @@ class Sensor:
             if value > 80:
                 icon = 'fa-battery-full'
             elif value > 60:
-                icon = 'fa-battery-three-quarter'
+                icon = 'fa-battery-three-quarters'
             elif value > 40:
                 icon = 'fa-battery-half'
             elif value > 20:
