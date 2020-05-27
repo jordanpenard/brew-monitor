@@ -107,7 +107,7 @@
                 % if current_user.is_authenticated and current_user.is_admin:
                         <li class="nav-item dropdown" id="admin_nav_item">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAdmin" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-screwdriver"></i> Admin
+                            <i class="fas fa-tools"></i> Admin
                             </a>
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownAdmin">
                               <a class="dropdown-item" href="${url_for('admin.admin_users')}">Users</a>
@@ -129,7 +129,7 @@
                             <li class="nav-item" id="username_nav_item">
                                 <a class="nav-link disabled">
                                     % if current_user.is_admin:
-                                    <i class="fas fa-screwdriver"></i>
+                                    <i class="fas fa-user"></i>
                                     % endif
                                     ${current_user.name}
                                 </a>
