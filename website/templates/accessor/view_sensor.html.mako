@@ -9,7 +9,7 @@
 
 <%block name="title">
     <h1>
-        ${elem_name | h} (sensor_id=${elem_id | h})
+        ${elem_name | h}
     % if elem_obj:
         ${sensor.render_icons(
             elem_obj.linked_project,
