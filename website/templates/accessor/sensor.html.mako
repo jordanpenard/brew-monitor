@@ -16,7 +16,7 @@
 
 <%def name="render_icons(linked_project, last_active_str, battery_info)">
 <div style="float: right;">
-% if linked_project is not None:
+% if linked_project:
     <span style="vertical-align: middle;" class="badge badge-success" title="Project id ${linked_project | h}">
         <i aria-hidden="true" class="fas fa-link"></i>
     </span>
