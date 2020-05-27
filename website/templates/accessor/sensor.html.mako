@@ -42,7 +42,7 @@
                 <a href="${item.get_link()}">${item.get_name()}</a>
             </div>
             ${render_icons(
-                item.is_linked(),
+                item.linked_project,
                 item.last_active_str() if item.is_active() else None,
                 item.battery_info(),
             )}
