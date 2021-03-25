@@ -9,7 +9,7 @@ Jinja2==2.10.1
 Mako==1.0.8
 MarkupSafe==1.1.1
 marshmallow==2.19.2
-PyYAML==5.1
+PyYAML==5.4
 Werkzeug==0.15.3
 flask-login==0.4.1
 bcrypt==3.1.7
