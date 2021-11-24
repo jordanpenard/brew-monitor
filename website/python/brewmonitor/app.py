@@ -43,6 +43,6 @@ def make_app(secret_key):
 
     @login_manager.user_loader
     def load_user(id):
-    	return User.from_db(config.db_connection(), int(id))
+        return User.from_db(config.db_connection(), int(id))
     
     return brewmonitor
