@@ -11,6 +11,18 @@ from brewmonitor.configuration import SQLConnection
 class User(UserMixin):
 
     @classmethod
+    def create_table_req(cls) -> str:
+        # To pretend to be like storage.access.BaseTable
+        return '''
+            create table if not exists User (
+                id integer primary key autoincrement,
+                is_admin bool,
+                username text not null,
+                password text not null
+            );
+        '''
+
+    @classmethod
     def from_db(cls, db_conn: SQLConnection, u_id: int) -> "User":
         data = db_conn.execute(
             '''
@@ -41,16 +53,19 @@ class User(UserMixin):
         return map(index_to_name, data)
 
     @classmethod
-    def create(cls, db_conn: SQLConnection, username: AnyStr, password: AnyStr, is_admin: bool):
+    def create(cls, db_conn: SQLConnection, username: AnyStr, password: AnyStr, is_admin: bool) -> "User":
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(password.encode('utf8'), salt)
-        db_conn.execute(
+        cursor = db_conn.cursor()
+        cursor.execute(
             '''
             insert into User (username, password, is_admin)
             values (?, ?, ?);
             ''',
             (username, hashed_password, is_admin)
         )
+        # lastrowid is the last successful insert on that cursor
+        return cls(cursor.lastrowid, username, is_admin)
 
     @classmethod
     def delete(cls, db_conn: SQLConnection, u_id: int):

@@ -36,7 +36,7 @@ def make_csv(data: List[attr.s], filename: str) -> Response:
     return send_csv(entries, filename, headers)
 
 
-def export_data(filename: str, _format: str, data: List[access.DataPoints]) -> Response:
+def export_data(filename: str, _format: str, data: List[access.Datapoint]) -> Response:
 
     if _format == 'json':
         output = [attr.asdict(d) for d in data]

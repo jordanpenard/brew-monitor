@@ -68,6 +68,7 @@ def get_project(project_id):
     datatable, plot = build_view_data(
         'project',
         data_points=project.data_points,
+        sensor_info=project.sensors,
         delete_next=delete_next,
     )
     
@@ -101,8 +102,8 @@ def get_project_data(project_id, out_format):
 @login_required
 def add_project():
 
-    project_id = access.insert_project(request.form['name'], current_user.id)
-    return redirect(url_for('accessor.get_project', project_id=project_id))
+    project = access.insert_project(request.form['name'], current_user.id)
+    return redirect(url_for('accessor.get_project', project_id=project.id))
 
 
 @accessor_bp.route('/project/<project_id>/change_sensor', methods=['POST'])

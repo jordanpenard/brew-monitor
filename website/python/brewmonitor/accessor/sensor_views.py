@@ -55,6 +55,7 @@ def get_sensor(sensor_id):
     datatable, plot = build_view_data(
         'sensor',
         data_points=sensor.data_points,
+        sensor_info={sensor.id: sensor},
         delete_next=delete_next,
     )
     
@@ -87,5 +88,5 @@ def get_sensor_data(sensor_id, out_format):
 @login_required
 def add_sensor():
 
-    sensor_id = access.insert_sensor(request.form['name'], request.form['secret'], current_user.id)
-    return redirect(url_for('accessor.get_sensor', sensor_id=sensor_id))
+    sensor = access.insert_sensor(request.form['name'], request.form['secret'], current_user)
+    return redirect(url_for('accessor.get_sensor', sensor_id=sensor.id))

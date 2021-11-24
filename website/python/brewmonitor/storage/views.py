@@ -32,7 +32,7 @@ def add_data():
         json_args['timestamp'] = datetime.now()
 
     try:
-        d = access.DataPoints(
+        d = access.Datapoint(
             project_id=None,  # populated once we got the sensor id
             **json_args
         )
