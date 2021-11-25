@@ -1,9 +1,9 @@
 import dataclasses
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Tuple
 
 from flask import url_for
 
-from brewmonitor.storage import access
+from brewmonitor.storage.tables import Datapoint, Sensor
 
 # A dictionary that contains the Plotly trace fields.
 TraceDict = Dict
@@ -30,9 +30,9 @@ class SensorTraces:
 
 def build_view_data(
     elem_name: str,
-    data_points: List[access.Datapoint],
-    sensor_info: Optional[Dict[int, access.Sensor]],
-    delete_next: Optional[str] = None,
+    data_points: List[Datapoint],
+    sensor_info: Dict[int, Sensor] = None,
+    delete_next: str = None,
 ) -> Tuple[List, Dict]:
     datatable = []
     if sensor_info is None:
@@ -46,18 +46,17 @@ def build_view_data(
         'data': [],
         'layout': {
             'autosize': True,
-            'title': f'{elem_name.title()} data',
+            'title': f'{elem_name} data'.title(),
             'xaxis': {
                 'title': 'Date',
             },
             'yaxis': {
                 'title': 'Temperature (C)',
-                'overlaying': 'y3',
                 'side': 'left',
             },
             'yaxis2': {
                 'title': 'Angle (&deg;)',
-                'overlaying': 'y3',
+                'overlaying': 'y',
                 'side': 'right',
             },
         },
@@ -72,7 +71,11 @@ def build_view_data(
         st = sensor_data.get(entry.sensor_id)
         if st is None:
             sensor = sensor_info.get(entry.sensor_id)
-            st = SensorTraces(sensor.name if sensor is not None else f"sensor {entry.sensor_id}")
+            if sensor is None:
+                sensor_name = f"sensor {entry.sensor_id}"
+            else:
+                sensor_name = sensor.name
+            st = SensorTraces(sensor_name)
             st.add_trace('temperature', 'y')
             st.add_trace('angle', 'y2')
             sensor_data[entry.sensor_id] = st

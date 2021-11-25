@@ -20,15 +20,15 @@ We use SQLite which should be included as part of your python3 installation, if 
 
 Create a python virtual env with the required libraries :
 ```
-python3.9 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+$> python3.9 -m venv venv
+$> source venv/bin/activate
+(venv) $> pip install -r requirements.txt
 ```
 
 Create the scratch folder where the debug db will be stored and optionally create dummy data:
 ```
-mkdir storage
-python python/make_dummy_data.py
+(venv) $> mkdir storage
+(venv) $> python python/make_dummy_data.py
 ```
 
 The location of the DB can be changed in `debug_config.yaml`.
@@ -39,10 +39,32 @@ Note that the `make_dummy_data` creates two users:
 
 Start the flask debug server (from the `website` folder):
 ```
-python python/run_server
+(venv) $> python python/run_server
 ```
 
 By default, it will run on [http://localhost:5000/]()
+
+## Unit tests
+
+We use `pytest` for the unit tests. Follow the same steps than to run a debug setup (venv) and simply run:
+
+```
+(venv) $> pytest python/test_brewmonitor/
+```
+
+Note: if you install the packages globally (i.e. the production example) you may not need the venv to run the tests.
+
+
+### Check coverage
+
+`pytest-cov` can be used to check the coverage of the unit tests, one can check the coverage by running:
+
+```
+(venv) $> pytest --cov=brewmonitor python/test_brewmonitor/
+```
+
+Once run one can also use `coverage html` to generate a more detailed report.
+
 
 ## Production server install (FreeBSD/Apache/WSGI)
 

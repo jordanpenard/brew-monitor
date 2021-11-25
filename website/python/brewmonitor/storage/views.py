@@ -4,7 +4,7 @@ from http import HTTPStatus
 import attr
 from flask import Blueprint, request
 
-from brewmonitor.storage import access
+from brewmonitor.storage import access, tables
 from brewmonitor.utils import json_response
 
 storage_bp = Blueprint(
@@ -32,7 +32,7 @@ def add_data():
         json_args['timestamp'] = datetime.now()
 
     try:
-        d = access.Datapoint(
+        d = tables.Datapoint(
             project_id=None,  # populated once we got the sensor id
             **json_args
         )

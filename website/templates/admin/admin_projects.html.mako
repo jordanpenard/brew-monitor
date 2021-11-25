@@ -78,7 +78,7 @@ function edit(id, url) {
                 <td id="project_name_${project.id}">${project.name}</td>
                 <td id="project_owner_${project.id}">${project.owner}</td>
                 <td>
-                    <button type="button" id="delete_${project.id}" onClick='show_confirm(${project.id}, "${project.name}", "${url_for('admin.delete_project', id=project.id)}")' class="btn btn-danger btn-sm">
+                    <button type="button" id="delete_${project.id}" onClick='show_confirm(${project.id}, "${project.name}", "${url_for('admin.delete_project', project_id=project.id)}")' class="btn btn-danger btn-sm">
                       <i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i>
                     </button>
                     &nbsp;

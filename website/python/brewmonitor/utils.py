@@ -6,7 +6,7 @@ from flask import Response
 from flask_csv import send_csv
 
 from brewmonitor import json
-from brewmonitor.storage import access
+from brewmonitor.storage.tables import Datapoint
 
 
 def json_response(
@@ -36,7 +36,7 @@ def make_csv(data: List[attr.s], filename: str) -> Response:
     return send_csv(entries, filename, headers)
 
 
-def export_data(filename: str, _format: str, data: List[access.Datapoint]) -> Response:
+def export_data(filename: str, _format: str, data: List[Datapoint]) -> Response:
 
     if _format == 'json':
         output = [attr.asdict(d) for d in data]

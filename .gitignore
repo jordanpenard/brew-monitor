@@ -7,5 +7,7 @@ venv
 # Python compiled objects
 __pycache__
 *.py[cod]
+.coverage
 
+# test database
 website/storage/

@@ -39,7 +39,7 @@
         <div class="card">
           <div class="card-header">
             <div style="float: left;">
-                <a href="${item.get_link()}">${item.get_name()}</a>
+                <a href="${item.get_link()}">${item.get_label()}</a>
             </div>
             ${render_icons(
                 item.linked_project,

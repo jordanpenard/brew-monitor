@@ -22,19 +22,19 @@
             </thead>
         % for user in users:
             <tr>
-                <td>${user['id']}</td>
-                <td>${user['username']}</td>
+                <td>${user.id}</td>
+                <td>${user.username}</td>
                 <td>*****</td>
                 <td>
                     <input disabled type="checkbox"
-                        % if user['is_admin']:
+                        % if user.is_admin:
                         checked
                         % endif
                     />
                 </td>
                 <td>
-                    <a href="${url_for('admin.delete_user', id=user['id'])}"
-                    % if user['id'] == current_user.id:
+                    <a href="${url_for('admin.delete_user', user_id=user.id)}"
+                    % if user.id == current_user.id:
                         class="btn btn-danger disabled"
                     % else:
                         class="btn btn-danger"
