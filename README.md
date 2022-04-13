@@ -11,5 +11,5 @@ The sensor regularly reads the temperature and angle and sends it to the website
 
 ## Website
 
-The [website](website/README.md) is providing an API that the sensor can contact to store and and a UI for the users to see the information. 
+The [website](website/README.md) is providing an API that the sensor can contact to store and a UI for the users to see the information. 
 

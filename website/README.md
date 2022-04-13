@@ -111,7 +111,8 @@ cd website
 pip3.9 install mod_wsgi
 pip3.9 install -r requirements.txt
 ```
-Note: mod_wsgi is not in the `requirements.txt` because it requires apache to be installed. But maybe we should add it to ensure people have apache installed?
+Note: mod_wsgi is not in the `requirements.txt` because it requires apache to be installed. 
+Installing apache with `mod_wsgi` varies from system to system.
 
 Create the WSGI script: `/usr/local/brew-monitor/config/brew-monitor.wsgi`
 ```python
