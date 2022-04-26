@@ -18,7 +18,7 @@ def all_projects():
     with config().db_connection() as db_conn:
         users = User.get_all(db_conn)
         projects = Project.get_all(db_conn)
-    return render_template('admin.all_projects.html.mako', projects=projects, users=users)
+    return render_template('admin_projects.html.mako', projects=projects, users=users)
 
 
 # Explicit method
