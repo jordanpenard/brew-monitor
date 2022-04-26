@@ -110,7 +110,7 @@
                             <i class="fas fa-tools"></i> Admin
                             </a>
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownAdmin">
-                              <a class="dropdown-item" href="${url_for('admin.users')}">Users</a>
+                              <a class="dropdown-item" href="${url_for('admin.all_users')}">Users</a>
                               <a class="dropdown-item" href="${url_for('admin.all_projects')}">Projects</a>
                               <a class="dropdown-item" href="${url_for('admin.all_sensors')}">Sensor</a>
                             </div>
