@@ -14,7 +14,7 @@ from brewmonitor.decorators import admin_required
 
 @admin_bp.route('/sensors')
 @admin_required
-def admin_sensors():
+def all_sensors():
     with config().db_connection() as db_conn:
         users = User.get_all(db_conn)
         sensors = Sensor.get_all(db_conn)
@@ -50,4 +50,4 @@ def edit_sensor(sensor_id):
         abort(HTTPStatus.BAD_REQUEST)  # unknown user
 
     access.edit_sensor(sensor, name, secret, owner, max_battery, min_battery)
-    return redirect(url_for('admin.admin_sensors'))
+    return redirect(url_for('admin.all_sensors'))
