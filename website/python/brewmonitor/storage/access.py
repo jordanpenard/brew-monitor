@@ -41,8 +41,8 @@ class ProjectData(Project):
 
 @attr.s
 class SensorData(Sensor):
-    projects = attr.ib(type=dict, default=attr.Factory(dict))  # type: Dict[int, Project]
-    data_points = attr.ib(type=list, default=attr.Factory(list))  # type: List[Datapoint]
+    projects = attr.ib(type=dict, factory=dict)  # type: Dict[int, Project]
+    data_points = attr.ib(type=list, factory=list)  # type: List[Datapoint]
 
     @classmethod
     def get_data(cls, db_conn: SQLConnection, sensor_id: int) -> Optional["SensorData"]:
@@ -87,8 +87,8 @@ def edit_sensor(sensor: Sensor, name: str, secret: str, owner: User, max_battery
             name=name,
             secret=secret,
             owner=owner,
-            max_battery=max_battery,
-            min_battery=min_battery,
+            max_battery=float(max_battery),
+            min_battery=float(min_battery),
         )
 
 

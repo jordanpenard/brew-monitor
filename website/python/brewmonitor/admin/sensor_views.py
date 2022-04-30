@@ -29,7 +29,7 @@ def delete_sensor(sensor_id):
         abort(HTTPStatus.NOT_FOUND)
 
     access.remove_sensor(sensor)
-    return redirect(url_for('admin.accessor.admin_sensors'))
+    return redirect(url_for('admin.all_sensors'))
 
 
 @admin_bp.route('/sensor/<sensor_id>/edit', methods=['POST'])
@@ -41,13 +41,16 @@ def edit_sensor(sensor_id):
 
     name = request.form['sensor_name']
     secret = request.form['sensor_secret']
-    owner_id = int(request.form['sensor_owner_id'])
-    max_battery = int(request.form['sensor_max_battery'])
-    min_battery = int(request.form['sensor_min_battery'])
+    try:
+        owner_id = int(request.form['sensor_owner_id'])
+        max_battery = int(request.form['sensor_max_battery'])
+        min_battery = int(request.form['sensor_min_battery'])
+    except ValueError:
+        abort(HTTPStatus.BAD_REQUEST, 'unexpected type')
+    else:
+        owner = access.get_user(owner_id)
+        if owner is None:
+            abort(HTTPStatus.BAD_REQUEST, 'unknown owner')
 
-    owner = access.get_user(owner_id)
-    if owner is None:
-        abort(HTTPStatus.BAD_REQUEST)  # unknown user
-
-    access.edit_sensor(sensor, name, secret, owner, max_battery, min_battery)
-    return redirect(url_for('admin.all_sensors'))
+        access.edit_sensor(sensor, name, secret, owner, max_battery, min_battery)
+        return redirect(url_for('admin.all_sensors'))

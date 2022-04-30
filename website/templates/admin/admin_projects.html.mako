@@ -18,23 +18,27 @@ function show_confirm(id, name, url) {
 }
 
 function edit(id, url) {
-    name = $("#project_name_"+id).html()
-    owner = $("#project_owner_"+id).html()
+    name = $("#project_name_" + id).html()
+    owner = $("#project_owner_" + id).html()
 
+    // TODO(tr) rewrite all of that to build it in mako
     $("#project_name_"+id).html('<input type="text" name="project_name" form="project_'+id+'" value="' + name + '">')
     $("#edit_"+id).html('<i class="fas fa-save" style="width: 16px;" aria-hidden="true"></i>')
     $("#edit_"+id).attr("onclick", "form.submit()")
     $("#edit_"+id).attr("form", "project_"+id)
     $("#delete_"+id).prop("disabled", true)
 
-    owner_select = '<select name="project_owner_id" form="project_'+id+'">'
-    % for user in users:
-        owner_select += '<option id="owner_select_${user['username']}" value="${user['id']}">${user['username']}</option>'
-    % endfor
-    owner_select += '</select>'
+    owner_select = '<select name="project_owner_id" form="project_'+id+'">';
+% for user in users:
+    owner_select += '<option id="owner_select_user_${user.id}" value="${user.id}"';
+    if ("${user.username | h}" == owner) {
+        owner_select += ' selected';
+    }
+    owner_select += '>${user.username | h}</option>';
+% endfor
+    owner_select += '</select>';
     
-    $("#project_owner_"+id).html(owner_select)
-    $("#owner_select_" + owner).prop("selected", true)
+    $("#project_owner_" + id).html(owner_select);
 }
 
 </script>
@@ -73,12 +77,12 @@ function edit(id, url) {
             </thead>
         % for project in projects:
             <tr>
-                <form id="project_${project.id}" method="post" action="${url_for('admin.edit_project', id=project.id)}"></form>
+                <form id="project_${project.id}" method="post" action="${url_for('admin.edit_project', project_id=project.id)}"></form>
                 <td>${project.id}</td>
                 <td id="project_name_${project.id}">${project.name}</td>
                 <td id="project_owner_${project.id}">${project.owner}</td>
                 <td>
-                    <button type="button" id="delete_${project.id}" onClick='show_confirm(${project.id}, "${project.name}", "${url_for('admin.delete_project', project_id=project.id)}")' class="btn btn-danger btn-sm">
+                    <button type="button" id="delete_${project.id}" onClick='show_confirm(${project.id}, "${project.name | h}", "${url_for('admin.delete_project', project_id=project.id)}")' class="btn btn-danger btn-sm">
                       <i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i>
                     </button>
                     &nbsp;

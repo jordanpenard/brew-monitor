@@ -22,7 +22,7 @@ def all_users():
 def add_user():
     username = request.form['username']
     password = request.form['password']
-    is_admin = bool(request.form['is_admin'])
+    is_admin = bool(request.form.get('is_admin'))
 
     access.insert_user(username, password, is_admin)
     return redirect(url_for('admin.all_users'))

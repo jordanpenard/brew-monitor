@@ -1,6 +1,6 @@
 import abc
 from datetime import datetime, timedelta
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Callable
 
 import attr
 import bcrypt
@@ -16,6 +16,11 @@ Required = None
 
 class BaseTable(metaclass=abc.ABCMeta):
     # Assumes children classes will use attr.s
+    # Each attributes can defined metadata.db_factory: Callable[[Dict], Any] to get a row
+    # and transform it to the expected object in python from the db value.
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
 
     @classmethod
     def additional_sql_fields(cls) -> List[str]:
@@ -32,6 +37,28 @@ class BaseTable(metaclass=abc.ABCMeta):
         rv += cls.additional_sql_fields()
 
         return f"create table if not exists {cls.__name__} (" + ', '.join(rv) + ");"
+
+    @classmethod
+    def row_factory_as_dict(cls, cursor, row) -> Dict:
+        """Help extract entries from the cursor and use default field values if no in the request."""
+        d = {
+            col[0]: row[idx]
+            for idx, col in enumerate(cursor.description)
+        }
+        for field in attr.fields(cls):
+            if field.name not in d:
+                if isinstance(field.default, attr.Factory):
+                    d[field.name] = field.default.factory()
+                elif field.default is not attr.NOTHING:
+                    d[field.name] = field.default
+            elif field.metadata.get('db_factory'):
+                d[field.name] = field.metadata['db_factory'](d)
+
+        return d
+
+    @classmethod
+    def row_factory(cls, cursor, row) -> "BaseTable":
+        return cls(**cls.row_factory_as_dict(cursor, row))
 
     @classmethod
     @abc.abstractmethod
@@ -57,28 +84,23 @@ class BaseTable(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
 
+def datetime_row_factory(field_name: str) -> Callable[[Dict], Optional[datetime]]:
+    def _f(r: Dict) -> Optional[datetime]:
+        return datetime.fromisoformat(r[field_name]) if r[field_name] else None
+    return _f
+
+
 @attr.s
 class User(BaseTable, UserMixin):
     id = attr.ib(type=int, metadata={'sql': '{name} integer primary key autoincrement'})
     username = attr.ib(type=str, metadata={'sql': '{name} text not null'})
-    is_admin = attr.ib(type=bool, metadata={'sql': '{name} bool'})
+    is_admin = attr.ib(type=bool, metadata={'sql': '{name} bool', 'db_factory': lambda r: bool(r['is_admin'])})
 
     @classmethod
     def additional_sql_fields(cls) -> List[str]:
         return super(User, cls).additional_sql_fields() + [
             'password text not null',
         ]
-
-    @classmethod
-    def row_factory(cls, _cursor, _row):
-        d = {}
-        for idx, col in enumerate(_cursor.description):
-            d[col[0]] = _row[idx]
-        return cls(
-            d['id'],
-            d['username'],
-            d['is_admin'],
-        )
 
     @classmethod
     def get_all(cls, db_conn: SQLConnection, **kwargs) -> List:
@@ -172,7 +194,11 @@ class Sensor(BaseTable):
     max_battery = attr.ib(type=float, default=None, metadata={'sql': '{name} real'})
     min_battery = attr.ib(type=float, default=None, metadata={'sql': '{name} real'})
 
-    last_active = attr.ib(type=datetime, default=None)  # in SQL we get that from the datapoints
+    last_active = attr.ib(
+        type=datetime,
+        default=None,
+        metadata={'db_factory': datetime_row_factory('last_active')},
+    )  # in SQL we get that from the datapoints
     last_battery = attr.ib(type=float, default=None)  # in SQL we get that from the datapoints
     linked_project = attr.ib(type=int, default=None)  # Assuming a sensor is only attached to 1 project
 
@@ -182,24 +208,6 @@ class Sensor(BaseTable):
             'battery float',
             'foreign key(owner) references User(id)',
         ]
-
-    @classmethod
-    def row_factory(cls, _cursor, _row) -> "Sensor":
-        d = {
-            col[0]: _row[idx]
-            for idx, col in enumerate(_cursor.description)
-        }
-        return cls(
-            d['id'],
-            d['name'],
-            d['secret'],
-            d['owner'],
-            d['max_battery'],
-            d['min_battery'],
-            last_active=datetime.fromisoformat(d['last_active']) if d['last_active'] else None,
-            last_battery=d['last_battery'],
-            linked_project=d['linked_project'],
-        )
 
     @classmethod
     def get_all(cls, db_conn: SQLConnection, **kwargs) -> List["Sensor"]:
@@ -371,8 +379,16 @@ class Project(BaseTable):
     # Assuming 1 sensor per project but could change the sensor.
     active_sensor = attr.ib(type=int, default=None, metadata={'sql': '{name} integer'})
 
-    first_active = attr.ib(type=datetime, default=None)  # in SQL we would get that from the datapoints
-    last_active = attr.ib(type=datetime, default=None)  # in SQL we would get that from the datapoints
+    first_active = attr.ib(
+        type=datetime,
+        default=None,
+        metadata={'db_factory': datetime_row_factory('first_active')},
+    )  # in SQL we would get that from the datapoints
+    last_active = attr.ib(
+        type=datetime,
+        default=None,
+        metadata={'db_factory': datetime_row_factory('last_active')},
+    )  # in SQL we would get that from the datapoints
     first_angle = attr.ib(type=float, default=None)
     last_angle = attr.ib(type=float, default=None)
     last_temperature = attr.ib(type=float, default=None)
@@ -383,24 +399,6 @@ class Project(BaseTable):
             'foreign key(owner) references User(id)',
             'foreign key(active_sensor) references Sensor(id)',
         ]
-
-    @classmethod
-    def row_factory(cls, _cursor, _row) -> "Project":
-        d = {
-            col[0]: _row[idx]
-            for idx, col in enumerate(_cursor.description)
-        }
-        return cls(
-            d['id'],
-            d['name'],
-            d['owner'],
-            d['active_sensor'],
-            datetime.fromisoformat(d['first_active']) if d['first_active'] else None,
-            datetime.fromisoformat(d['last_active']) if d['last_active'] else None,
-            d['first_angle'],
-            d['last_angle'],
-            d['last_temperature'],
-        )
 
     @classmethod
     def get_all(cls, db_conn: SQLConnection, **kwargs) -> List["Project"]:
@@ -566,7 +564,10 @@ class Project(BaseTable):
 class Datapoint(BaseTable):
     sensor_id = attr.ib(type=int, metadata={'sql': '{name} integer not null'})
     project_id = attr.ib(type=int, metadata={'sql': '{name} integer'})
-    timestamp = attr.ib(type=datetime, metadata={'sql': '{name} integer not null'})
+    timestamp = attr.ib(
+        type=datetime,
+        metadata={'sql': '{name} integer not null', 'db_factory': datetime_row_factory('timestamp')},
+    )
     angle = attr.ib(type=float, metadata={'sql': '{name} real'})
     temperature = attr.ib(type=float, metadata={'sql': '{name} real'})
     battery = attr.ib(type=float, metadata={'sql': '{name} real'})
@@ -578,21 +579,6 @@ class Datapoint(BaseTable):
             'foreign key(sensor_id) references Sensor(id)',
             'foreign key(project_id) references Project(id)',
         ]
-
-    @classmethod
-    def row_factory(cls, _cursor, _row):
-        d = {}
-        for idx, col in enumerate(_cursor.description):
-            d[col[0]] = _row[idx]
-        return cls(
-            d['sensor_id'],
-            d['project_id'],
-            datetime.fromisoformat(d['timestamp']),
-            d['angle'],
-            d['temperature'],
-            d['battery'],
-            d['id'],
-        )
 
     @classmethod
     def get_all(
