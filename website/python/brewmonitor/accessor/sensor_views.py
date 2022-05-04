@@ -87,6 +87,6 @@ def get_sensor_data(sensor_id, out_format):
 @accessor_bp.route('/sensor/add', methods=['POST'])
 @login_required
 def add_sensor():
-
+    # TODO(tr) instead of @login_required we should reject non-logged-in users with 403
     sensor = access.insert_sensor(request.form['name'], request.form['secret'], current_user)
     return redirect(url_for('accessor.get_sensor', sensor_id=sensor.id))

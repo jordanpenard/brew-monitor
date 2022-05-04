@@ -2,8 +2,11 @@ from http import HTTPStatus
 
 from flask import url_for
 
+from test_brewmonitor.utils import MultiClientBase
 
-def test_index_view(public_client):
-    resp = public_client.get('/')
-    assert resp.status_code == HTTPStatus.FOUND
-    assert resp.location == url_for('accessor.all_projects', _external=True)
+
+class TestIndexView(MultiClientBase):
+    def _check_view(self, client):
+        resp = client.get('/')
+        assert resp.status_code == HTTPStatus.FOUND
+        assert resp.location == url_for('accessor.all_projects', _external=True)

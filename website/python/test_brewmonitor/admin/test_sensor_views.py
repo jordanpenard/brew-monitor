@@ -40,20 +40,15 @@ class TestAdminViews:
 
     # TODO(tr) add test when deleting an unknown sensor
 
-    def test_delete_sensor(self, admin_user, admin_client, other_sensor_data):
-        bm_config = config_from_client(admin_client.application)
-        with bm_config.db_connection() as conn:
-            new_sensor = Sensor.create(conn, **dict(
-                owner=admin_user,
-                **other_sensor_data
-            ))
+    def test_delete_sensor(self, admin_user, admin_client, other_sensor):
 
-        resp = admin_client.get(url_for('admin.delete_sensor', sensor_id=new_sensor.id))
+        resp = admin_client.get(url_for('admin.delete_sensor', sensor_id=other_sensor.id))
         assert resp.status_code == HTTPStatus.FOUND
         assert resp.location == url_for('admin.all_sensors', _external=True)
 
+        bm_config = config_from_client(admin_client.application)
         with bm_config.db_connection() as conn:
-            assert Sensor.find(conn, new_sensor.id) is None, 'sensor should have been deleted'
+            assert Sensor.find(conn, other_sensor.id) is None, 'sensor should have been deleted'
 
     # TODO(tr) add test when updating an unknown sensor
     # TODO(tr) add test when updating owner_id
@@ -67,17 +62,10 @@ class TestAdminViews:
         {'name': 'neo sensor 2', 'secret': 'another secret'},
         {'min_battery': '1', 'max_battery': '5'},
     ))
-    def test_edit_sensor(self, admin_user, admin_client, other_sensor_data, new_sensor_data):
-        bm_config = config_from_client(admin_client.application)
-        with bm_config.db_connection() as conn:
-            new_sensor = Sensor.create(conn, **dict(
-                owner=admin_user,
-                **other_sensor_data
-            ))
-
+    def test_edit_sensor(self, admin_user, admin_client, other_sensor, new_sensor_data):
         sensor_data = {
-            f'sensor_{k}': v
-            for k, v in other_sensor_data.items()
+            f'sensor_{k}': getattr(other_sensor, k)
+            for k in ('name', 'secret')
         }
         sensor_data['sensor_owner_id'] = str(admin_user.id)
         # TODO(tr) force battery update because #15
@@ -85,17 +73,18 @@ class TestAdminViews:
         sensor_data['sensor_max_battery'] = '10'
         for k, v in new_sensor_data.items():
             sensor_data[f'sensor_{k}'] = v
-            assert getattr(new_sensor, k) != v, 'test need updating'
+            assert getattr(other_sensor, k) != v, 'test need updating'
 
         resp = admin_client.post(
-            url_for('admin.edit_sensor', sensor_id=new_sensor.id),
+            url_for('admin.edit_sensor', sensor_id=other_sensor.id),
             data=sensor_data,
         )
         assert resp.status_code == HTTPStatus.FOUND
         assert resp.location == url_for('admin.all_sensors', _external=True)
 
+        bm_config = config_from_client(admin_client.application)
         with bm_config.db_connection() as conn:
-            updated_new_sensor = Sensor.find(conn, new_sensor.id)
+            updated_new_sensor = Sensor.find(conn, other_sensor.id)
             for k, v in new_sensor_data.items():
                 object_v = getattr(updated_new_sensor, k)
                 if type(object_v) == float:

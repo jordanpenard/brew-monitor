@@ -21,6 +21,7 @@ pycparser==2.21
 pyparsing==3.0.6
 pytest==6.2.5
 pytest-cov==3.0.0
+pytest-random-order==1.0.4
 PyYAML==6.0
 six==1.16.0
 toml==0.10.2

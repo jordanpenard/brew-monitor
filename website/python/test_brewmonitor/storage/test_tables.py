@@ -170,7 +170,7 @@ class TestSensor:
 
         sensors = Sensor.get_all(bm_config.db_connection())
 
-        assert len(sensors) == 3
+        assert len(sensors) == 3, sensors
 
         by_name = {}
         by_owner = {}
@@ -366,7 +366,7 @@ class TestProject:
 
         projects = Project.get_all(bm_config.db_connection())
 
-        assert len(projects) == 3
+        assert len(projects) == 3, projects
 
         by_name = {}
         by_owner = {}

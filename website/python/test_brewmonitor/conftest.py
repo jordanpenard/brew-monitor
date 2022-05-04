@@ -1,6 +1,7 @@
 import os
 from copy import deepcopy
 from datetime import datetime
+from http import HTTPStatus
 from tempfile import NamedTemporaryFile
 from typing import Optional
 
@@ -73,58 +74,56 @@ def public_client(preset_app):
 def find_user(db_conn, username: str) -> Optional[User]:
     cursor = db_conn.execute(
         '''
-            select id, username, is_admin
+            select id
             from User
             where username=?
         ''',
         (username,),
     )
-    cursor.row_factory = User.row_factory
-    return cursor.fetchone()
+    # cursor.row_factory = User.row_factory
+    user = cursor.fetchone()
+    if user:
+        return User.find(db_conn, user[0])
+    return None
 
 
 def find_sensor(db_conn, sensor_name: str) -> Optional[Sensor]:
     cursor = db_conn.execute(
         '''
-            select id, name, secret, owner
+            select id
             from Sensor
             where name=?
         ''',
         (sensor_name,),
     )
-    cursor.row_factory = Sensor.row_factory
-    return cursor.fetchone()
-
-
-def find_project(db_conn, project_name: str) -> Optional[Project]:
-    cursor = db_conn.execute(
-        '''
-            select id, name, owner
-            from Project
-            where name=?
-        ''',
-        (project_name,),
-    )
-    cursor.row_factory = Project.row_factory
-    return cursor.fetchone()
+    # cursor.row_factory = Sensor.row_factory
+    sensor = cursor.fetchone()
+    if sensor is not None:
+        return Sensor.find(db_conn, sensor[0])
+    return None
 
 
 @pytest.fixture
-def user_client(preset_app):
+def normal_user(preset_app):
     bm_config = config_from_client(preset_app)
     with bm_config.db_connection() as conn:
-        normal_user = find_user(conn, 'titi')
-        assert normal_user, 'Should have "titi"'
+        user = find_user(conn, 'titi')
+        assert user, 'Should have "titi"'
+        return user
 
+
+@pytest.fixture
+def user_client(preset_app, normal_user):
     with preset_app.test_client() as client:
         print(f'Login {normal_user}')
-        client.post(
+        resp = client.post(
             '/login',
             data={
                 'username': normal_user.username,
-                'password': 'admin',
+                'password': 'pass',
             },
         )
+        assert resp.status_code == HTTPStatus.FOUND
         yield client
         print(f'Logout {normal_user}')
         client.post('/logout')
@@ -143,20 +142,24 @@ def admin_user(preset_app):
 def admin_client(preset_app, admin_user):
     with preset_app.test_client() as client:
         print(f'Login {admin_user}')
-        client.post(
+        resp = client.post(
             '/login',
             data={
                 'username': admin_user.username,
                 'password': 'admin',
             },
         )
+        assert resp.status_code == HTTPStatus.FOUND
         yield client
         client.post('/logout')
 
 
 @pytest.fixture
-def other_user_data(preset_app):
-    """Create some user data assuming it will be created and delete it afterwards"""
+def new_user_data(preset_app):
+    """Create some user data assuming it will be created and delete it afterwards
+
+    Do NOT change the username in the test
+    """
     user_data = {
         # TODO(tr) make the username random
         'username': 'new_user',
@@ -172,35 +175,60 @@ def other_user_data(preset_app):
 
 
 @pytest.fixture
-def other_sensor_data(preset_app):
-    """Create some sensor data assuming it will be created and delete it afterwards"""
+def new_sensor_data(preset_app):
+    """Create some sensor data assuming it will be created and delete it afterwards
+
+    Do NOT change the name in the test
+    """
     sensor_data = {
         # TODO(tr) make the name random
-        'name': 'sensor',
-        'secret': 'sensor_secret',
-        # owner has to be attached
+        'name': 'new sensor',
+        'secret': 'my_pwd',
     }
     yield sensor_data
     bm_config = config_from_client(preset_app)
     with bm_config.db_connection() as conn:
-        s = find_sensor(conn, sensor_data['name'])
+        sensor = find_sensor(conn, sensor_data['name'])
+        if sensor:
+            print(f'Deleting {sensor}')
+            sensor.delete(conn)
+
+
+@pytest.fixture
+def other_sensor(preset_app, admin_user):
+    """Create some sensor data assuming it will be created and delete it afterwards"""
+    bm_config = config_from_client(preset_app)
+    with bm_config.db_connection() as conn:
+        # TODO(tr) make the name random
+        new_sensor = Sensor.create(
+            conn,
+            owner=admin_user,
+            name='sensor',
+            secret='sensor_secret',
+        )
+    yield new_sensor
+    with bm_config.db_connection() as conn:
+        s = Sensor.find(conn, new_sensor.id)
         if s:
             print(f'Deleting {s}')
             s.delete(conn)
 
 
 @pytest.fixture
-def other_project_data(preset_app):
+def other_project(preset_app, admin_user):
     """Create some project data assuming it will be created and delete it afterwards"""
-    project_data = {
-        # TODO(tr) make the name random
-        'name': 'super beer',
-        # owner has to be attached
-    }
-    yield project_data
     bm_config = config_from_client(preset_app)
     with bm_config.db_connection() as conn:
-        p = find_project(conn, project_data['name'])
+        # TODO(tr) make the name random
+        new_project = Project.create(
+            conn,
+            owner=admin_user,
+            name='super beer',
+        )
+    yield new_project
+
+    with bm_config.db_connection() as conn:
+        p = Project.find(conn, new_project.id)
         if p:
             print(f'Deleting {p}')
             p.delete(conn)

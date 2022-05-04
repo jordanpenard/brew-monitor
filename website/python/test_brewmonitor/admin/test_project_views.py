@@ -40,35 +40,24 @@ class TestAdminViews:
 
     # TODO(tr) add test when deleting an unknown project
 
-    def test_delete_project(self, admin_user, admin_client, other_project_data):
-        bm_config = config_from_client(admin_client.application)
-        with bm_config.db_connection() as conn:
-            new_project = Project.create(conn, **dict(
-                owner=admin_user,
-                **other_project_data
-            ))
-
-        resp = admin_client.get(url_for('admin.delete_project', project_id=new_project.id))
+    def test_delete_project(self, admin_user, admin_client, other_project):
+        resp = admin_client.get(url_for('admin.delete_project', project_id=other_project.id))
         assert resp.status_code == HTTPStatus.FOUND
         assert resp.location == url_for('admin.all_projects', _external=True)
 
+        bm_config = config_from_client(admin_client.application)
         with bm_config.db_connection() as conn:
-            assert Project.find(conn, new_project.id) is None, 'project should have been deleted'
+            assert Project.find(conn, other_project.id) is None, 'project should have been deleted'
 
     # TODO(tr) add test when editing an unknown project
     # TODO(tr) add test when changing owner in a project
 
-    def test_edit_project(self, admin_user, admin_client, other_project_data):
-        bm_config = config_from_client(admin_client.application)
-        with bm_config.db_connection() as conn:
-            new_project = Project.create(conn, **dict(
-                owner=admin_user,
-                **other_project_data
-            ))
-        new_name = new_project.name + ' - frozen fermented'
+    def test_edit_project(self, admin_user, admin_client, other_project):
+
+        new_name = other_project.name + ' - frozen fermented'
 
         resp = admin_client.post(
-            url_for('admin.edit_project', project_id=new_project.id),
+            url_for('admin.edit_project', project_id=other_project.id),
             data={
                 'project_name': new_name,
                 'project_owner_id': admin_user.id,
@@ -77,6 +66,7 @@ class TestAdminViews:
         assert resp.status_code == HTTPStatus.FOUND
         assert resp.location == url_for('admin.all_projects', _external=True)
 
+        bm_config = config_from_client(admin_client.application)
         with bm_config.db_connection() as conn:
-            updated_project = Project.find(conn, new_project.id)
+            updated_project = Project.find(conn, other_project.id)
             assert updated_project.name == new_name
