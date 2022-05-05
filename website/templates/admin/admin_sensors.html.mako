@@ -8,6 +8,8 @@
     <h1 class="title">Admin sensors</h1>
 </%block>
 
+<%include file="add_sensor.html.mako" />
+
 <script type="text/javascript">
 
 function show_confirm(id, name, url) {
