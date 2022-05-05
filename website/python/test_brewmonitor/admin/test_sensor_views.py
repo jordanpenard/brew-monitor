@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+import attr
 import pytest
 from flask import url_for
 
@@ -64,13 +65,11 @@ class TestAdminViews:
     ))
     def test_edit_sensor(self, admin_user, admin_client, other_sensor, new_sensor_data):
         sensor_data = {
-            f'sensor_{k}': getattr(other_sensor, k)
-            for k in ('name', 'secret')
+            f'sensor_{f.name}': getattr(other_sensor, f.name)
+            for f in attr.fields(Sensor)
+            if f.name not in ('id', 'owner')
         }
         sensor_data['sensor_owner_id'] = str(admin_user.id)
-        # TODO(tr) force battery update because #15
-        sensor_data['sensor_min_battery'] = '0'
-        sensor_data['sensor_max_battery'] = '10'
         for k, v in new_sensor_data.items():
             sensor_data[f'sensor_{k}'] = v
             assert getattr(other_sensor, k) != v, 'test need updating'

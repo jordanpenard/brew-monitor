@@ -191,8 +191,8 @@ class Sensor(BaseTable):
     secret = attr.ib(type=str, metadata={'sql': '{name} text not null'})
     # TODO(tr) This should really be the owner id and we should store the name separately
     owner = attr.ib(type=str, metadata={'sql': '{name} integer not null'})
-    max_battery = attr.ib(type=float, default=None, metadata={'sql': '{name} real'})
-    min_battery = attr.ib(type=float, default=None, metadata={'sql': '{name} real'})
+    max_battery = attr.ib(type=float, default=2.0, metadata={'sql': '{name} real'})
+    min_battery = attr.ib(type=float, default=4.0, metadata={'sql': '{name} real'})
 
     last_active = attr.ib(
         type=datetime,
@@ -250,19 +250,28 @@ class Sensor(BaseTable):
         name: str = Required,
         secret: str = Required,
         owner: User = Required,
+        min_battery: float = None,
+        max_battery: float = None,
     ) -> "Sensor":
         if name is None or secret is None or owner is None:
-            raise ValueError('All arguments are required')
+            raise ValueError('Most arguments are required')
+
+        default_val = attr.fields_dict(cls)
+
+        if min_battery is None and default_val['min_battery'].default is not attr.NOTHING:
+            min_battery = default_val['min_battery'].default
+        if max_battery is None and default_val['max_battery'].default is not attr.NOTHING:
+            max_battery = default_val['max_battery'].default
 
         cursor = db_conn.cursor()
         cursor.execute(
             '''
-            insert into Sensor (name, secret, owner, max_battery, min_battery) values (?, ?, ?, 4.0, 2.0);
+            insert into Sensor (name, secret, owner, max_battery, min_battery) values (?, ?, ?, ?, ?);
             ''',
-            (name, secret, owner.id),
+            (name, secret, owner.id, min_battery, max_battery),
         )
         # lastrowid is the last successful insert on that cursor
-        return cls(cursor.lastrowid, name, secret, owner.username)
+        return cls(cursor.lastrowid, name, secret, owner.username, min_battery, max_battery)
 
     def edit(self, db_conn: SQLConnection, **kwargs):
         request_fields = []
