@@ -224,9 +224,10 @@ class TestSensor:
             assert new_sensor.name == 'new sensor fun'
             assert new_sensor.secret == 'new secret'
             assert new_sensor.owner == 'toto'
+            # Default value
+            assert new_sensor.max_battery == 4.0
+            assert new_sensor.min_battery == 2.0
             # Not filled at creation
-            assert new_sensor.max_battery is None
-            assert new_sensor.min_battery is None
             assert new_sensor.linked_project is None
             # available from Datapoints, so should have nothing yet
             assert new_sensor.last_active is None
@@ -246,9 +247,9 @@ class TestSensor:
         assert updated_sensor.name == 'new sensor fun'
         assert updated_sensor.secret == 'new secret'
         assert updated_sensor.owner == 'toto'
-        # only after update
-        assert updated_sensor.max_battery is None
-        assert updated_sensor.min_battery is None
+        # Default value
+        assert updated_sensor.max_battery == 4.0
+        assert updated_sensor.min_battery == 2.0
         # after creating datapoints
         assert updated_sensor.last_active == datetime(2021, 11, 26, 12, 45)
         assert updated_sensor.last_battery == 9.2
@@ -285,8 +286,9 @@ class TestSensor:
         assert new_sensor.name == 'new sensor fun'
         assert new_sensor.secret == 'new secret'
         assert new_sensor.owner == 'toto'
-        assert new_sensor.max_battery is None
-        assert new_sensor.min_battery is None
+        # Default value
+        assert new_sensor.max_battery == 4.0
+        assert new_sensor.min_battery == 2.0
 
         with bm_config.db_connection() as conn:
             new_sensor.edit(
@@ -294,15 +296,15 @@ class TestSensor:
                 name='new sensor',
                 secret='another secret',
                 owner=next_owner,
-                max_battery=10,
-                min_battery=1,
+                max_battery=10.0,
+                min_battery=1.0,
             )
             # Check that the object was updated
             assert new_sensor.name == 'new sensor'
             assert new_sensor.secret == 'another secret'
             assert new_sensor.owner == 'sasa'
-            assert new_sensor.max_battery == 10
-            assert new_sensor.min_battery == 1
+            assert new_sensor.max_battery == 10.0
+            assert new_sensor.min_battery == 1.0
 
         with bm_config.db_connection() as conn:
             db_sensor = Sensor.find(conn, sensor_id=new_sensor.id)
@@ -310,8 +312,8 @@ class TestSensor:
             assert db_sensor.name == 'new sensor'
             assert db_sensor.secret == 'another secret'
             assert db_sensor.owner == 'sasa'
-            assert db_sensor.max_battery == 10
-            assert db_sensor.min_battery == 1
+            assert db_sensor.max_battery == 10.0
+            assert db_sensor.min_battery == 1.0
 
     def test_edit_unknown_attributes_is_invalid(self, tmp_app):
         bm_config = config_from_client(tmp_app)
