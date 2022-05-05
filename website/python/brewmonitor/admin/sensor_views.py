@@ -43,8 +43,8 @@ def edit_sensor(sensor_id):
     secret = request.form['sensor_secret']
     try:
         owner_id = int(request.form['sensor_owner_id'])
-        max_battery = int(request.form['sensor_max_battery'])
-        min_battery = int(request.form['sensor_min_battery'])
+        max_battery = float(request.form['sensor_max_battery'])
+        min_battery = float(request.form['sensor_min_battery'])
     except ValueError:
         abort(HTTPStatus.BAD_REQUEST, 'unexpected type')
     else:

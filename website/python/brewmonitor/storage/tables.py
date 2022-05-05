@@ -257,7 +257,7 @@ class Sensor(BaseTable):
         cursor = db_conn.cursor()
         cursor.execute(
             '''
-            insert into Sensor (name, secret, owner) values (?, ?, ?);
+            insert into Sensor (name, secret, owner, max_battery, min_battery) values (?, ?, ?, 4.0, 2.0);
             ''',
             (name, secret, owner.id),
         )
