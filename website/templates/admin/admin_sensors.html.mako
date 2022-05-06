@@ -8,7 +8,7 @@
     <h1 class="title">Admin sensors</h1>
 </%block>
 
-<%include file="add_sensor.html.mako" />
+${parent.add_sensor_view()}
 
 <script type="text/javascript">
 

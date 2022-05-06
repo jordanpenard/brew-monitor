@@ -58,7 +58,7 @@
 
 <%block name="elem_links_row">
 % if show_add_sensor:
-    <%include file="../add_sensor.html.mako" />
+    ${parent.add_sensor_view()}
 % endif
 
 <div class="row">
