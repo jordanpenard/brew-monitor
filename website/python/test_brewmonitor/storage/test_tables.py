@@ -1,9 +1,12 @@
+import re
 from datetime import datetime, timedelta
+from typing import Dict, Type
 
 import pytest
 from brewmonitor.storage.access import ProjectData
 from brewmonitor.storage.tables import BaseTable, Datapoint, Project, Sensor, User
-from test_brewmonitor.conftest import config_from_client, preset_when
+from test_brewmonitor.constants import preset_when
+from test_brewmonitor.utils import config_from_client
 
 
 class TestCoverage:
@@ -23,7 +26,17 @@ class TestCoverage:
                     getattr(base_obj, method)(conn)
 
 
+def check_sub_fields(cls: Type[BaseTable], expected: Dict[str, str]):
+    i = 0
+    for i, sub_q in enumerate(cls.sub_fields(), start=1):
+        field = sub_q.split(' ')[-1]
+        assert re.match(f'{expected[field]} as {field}', sub_q), f'{field=} {sub_q=}'
+    assert i == len(expected)
+
+
 class TestUser:
+    def test_sub_fields(self):
+        check_sub_fields(User, {})
 
     def test_get_all(self, preset_app):
         bm_config = config_from_client(preset_app)
@@ -164,6 +177,14 @@ class TestUser:
 
 
 class TestSensor:
+    def test_sub_fields(self):
+        expected = {
+            'owner': r'\(select \b\w+\b from User where .+\)',
+            'last_active': r'\(select \b\w+\b from Datapoint where .+\)',
+            'last_battery': r'\(select \b\w+\b from Datapoint where .+\)',
+            'linked_project': r'\(select \b\w+\b from Project where .+\)',
+        }
+        check_sub_fields(Sensor, expected)
 
     def test_get_all(self, preset_app):
         bm_config = config_from_client(preset_app)
@@ -360,6 +381,16 @@ class TestSensor:
 
 
 class TestProject:
+    def test_sub_fields(self):
+        expected = {
+            'first_active': r'\(select \b\w+\b from Datapoint where .+\)',
+            'first_angle': r'\(select \b\w+\b from Datapoint where .+\)',
+            'last_active': r'\(select \b\w+\b from Datapoint where .+\)',
+            'last_angle': r'\(select \b\w+\b from Datapoint where .+\)',
+            'last_temperature': r'\(select \b\w+\b from Datapoint where .+\)',
+            'owner': r'\(select \b\w+\b from User where .+\)',
+        }
+        check_sub_fields(Project, expected)
 
     def test_get_all(self, preset_app):
         bm_config = config_from_client(preset_app)
@@ -614,6 +645,8 @@ class TestProject:
 
 
 class TestDatapoint:
+    def test_sub_fields(self):
+        check_sub_fields(Datapoint, {})
 
     def test_get_all_not_implemented_without_project_and_sensor(self, preset_app):
         bm_config = config_from_client(preset_app)

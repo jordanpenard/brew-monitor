@@ -3,8 +3,7 @@ from http import HTTPStatus
 import pytest
 from brewmonitor.storage.tables import Project, Sensor
 from flask import url_for
-from test_brewmonitor.conftest import config_from_client, find_project
-from test_brewmonitor.utils import MultiClientBase
+from test_brewmonitor.utils import MultiClientBase, config_from_client, find_project
 
 
 class TestAllProjects(MultiClientBase):

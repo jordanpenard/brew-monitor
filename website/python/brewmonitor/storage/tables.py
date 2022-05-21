@@ -63,7 +63,7 @@ class BaseTable(metaclass=abc.ABCMeta):
     def sub_fields(cls) -> List[str]:
         """Helper method to extract sub-querries from attr fields"""
         return [
-            f'({f.metadata["subquery"]}) as {f.name}'
+            f'({f.metadata["subquery"].strip()}) as {f.name}'
             for f in attr.fields(cls)  # type: attr.Attribute
             if f.metadata.get('subquery')
         ]
@@ -98,7 +98,9 @@ class BaseTable(metaclass=abc.ABCMeta):
 
 def datetime_row_factory(field_name: str) -> Callable[[Dict], Optional[datetime]]:
     def _f(r: Dict) -> Optional[datetime]:
-        return datetime.fromisoformat(r[field_name]) if r[field_name] else None
+        if r[field_name]:
+            return datetime.fromisoformat(r[field_name])
+        return None
     return _f
 
 
@@ -225,7 +227,7 @@ class Sensor(BaseTable):
         metadata={
             'db_factory': datetime_row_factory('last_active'),
             'subquery': """
-                select battery from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1
+                select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1
             """,
         },
     )

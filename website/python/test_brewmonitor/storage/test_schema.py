@@ -1,7 +1,7 @@
 import pytest
 from brewmonitor import schema
 from make_dummy_data import make_dummy_data
-from test_brewmonitor.conftest import config_from_client
+from test_brewmonitor.utils import config_from_client
 
 
 @pytest.mark.parametrize('table', schema.tables)

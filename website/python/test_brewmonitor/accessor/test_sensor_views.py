@@ -1,8 +1,7 @@
 from http import HTTPStatus
 
 from flask import url_for
-from test_brewmonitor.conftest import config_from_client, find_sensor
-from test_brewmonitor.utils import MultiClientBase
+from test_brewmonitor.utils import MultiClientBase, config_from_client, find_sensor
 
 
 class TestAllSensors(MultiClientBase):
