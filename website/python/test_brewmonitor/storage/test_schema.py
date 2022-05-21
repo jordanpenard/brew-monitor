@@ -1,5 +1,4 @@
 import pytest
-
 from brewmonitor import schema
 from make_dummy_data import make_dummy_data
 from test_brewmonitor.conftest import config_from_client
@@ -13,17 +12,18 @@ def test_initialise_db_creates_table(tmp_app, table):
     with bm_config.db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            '''
-                select name from sqlite_master where type='table' and name=?;
-            ''',
-            (table.__name__,)
+            """
+            select name from sqlite_master where type='table' and name=?;
+            """,
+            (table.__name__,),
         )
         assert cursor.fetchone()[0], f'Table {table.__name__} should exist at start'
 
 
 def test_initialise_db_keeps_content(tmp_app):
     # initialise_db is called when we create the tmp_client.
-    # Let's populate the tables and make sure it's unaffected when calling initialise_db again
+    # Let's populate the tables and make sure it's unaffected when calling
+    # initialise_db again
     bm_config = config_from_client(tmp_app)
 
     rows_by_table = {}

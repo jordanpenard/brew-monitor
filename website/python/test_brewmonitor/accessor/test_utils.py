@@ -2,10 +2,9 @@ from datetime import datetime
 from typing import List, Optional
 
 import pytest
-from flask import url_for
-
 from brewmonitor.accessor.utils import build_view_data
 from brewmonitor.storage.tables import Datapoint, Sensor
+from flask import url_for
 
 
 class TestBuildViewData:
@@ -65,8 +64,8 @@ class TestBuildViewData:
 
     @classmethod
     def check_s1_datatable(cls, datatable_data, delete_next: Optional[str]):
-        # This is mostly testing that the fields exists, Datatpoint.as_datatable is responsible
-        # for actually formatting the entry
+        # This is mostly testing that the fields exists, Datatpoint.as_datatable is
+        # responsible for actually formatting the entry
         assert len(datatable_data) == 3
 
         for d in datatable_data:
@@ -85,8 +84,8 @@ class TestBuildViewData:
     ))
     def test_project_datatable_view(self, tmp_app, s1_datapoints, delete_next):
         with tmp_app.app_context():
-            # even with the app context it rejects the creation of the url with next=<next_url>
-            # even thought it works on the real server...
+            # even with the app context it rejects the creation of the url
+            # with next=<next_url> even thought it works on the real server...
             if delete_next:
                 next_url = url_for(delete_next)
             else:
@@ -104,8 +103,8 @@ class TestBuildViewData:
     ))
     def test_sensor_datatable_view(self, tmp_app, s1_datapoints, delete_next):
         with tmp_app.app_context():
-            # even with the app context it rejects the creation of the url with next=<next_url>
-            # even thought it works on the real server...
+            # even with the app context it rejects the creation of the url
+            # with next=<next_url> even thought it works on the real server...
             if delete_next:
                 next_url = url_for(delete_next)
             else:
@@ -135,7 +134,8 @@ class TestBuildViewData:
             s2_datapoints,
             sensor_info={
                 1: Sensor(1, 'green sensor', 'secret', 'toto'),  # should not be used
-                # 2: Sensor(2, 'brown sensor', 'secret', 'toto'),  # remove so that it has to use default name
+                # remove so that it has to use default name
+                # 2: Sensor(2, 'brown sensor', 'secret', 'toto'),
             },
             delete_next=None,
         )

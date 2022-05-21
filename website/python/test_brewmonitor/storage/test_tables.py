@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 
 import pytest
-
 from brewmonitor.storage.access import ProjectData
-from brewmonitor.storage.tables import Sensor, Project, Datapoint, User, BaseTable
+from brewmonitor.storage.tables import BaseTable, Datapoint, Project, Sensor, User
 from test_brewmonitor.conftest import config_from_client, preset_when
 
 
@@ -42,7 +41,7 @@ class TestUser:
         assert users[1] == User(
             id=2,
             username='titi',
-            is_admin=False
+            is_admin=False,
         )
 
     def test_get_all_invalid(self, tmp_app):
@@ -239,7 +238,7 @@ class TestSensor:
                 [
                     Datapoint(new_sensor.id, None, datetime(2021, 11, 26, 12, 40), 23, 20.0, 9.5),
                     Datapoint(new_sensor.id, None, datetime(2021, 11, 26, 12, 45), 23.3, 19.4, 9.2),
-                ]
+                ],
             )
 
         # now that we have data points we should be able to find the sensor
@@ -447,7 +446,7 @@ class TestProject:
 
     @pytest.mark.parametrize('remove_arg', (
         'name',
-        'owner'
+        'owner',
     ))
     def test_create_invalid(self, tmp_app, remove_arg):
         bm_config = config_from_client(tmp_app)
@@ -456,7 +455,7 @@ class TestProject:
             owner = User.create(conn, username='user', password='pass', is_admin=False)
             kwargs = {
                 'name': 'new project',
-                'owner': owner
+                'owner': owner,
             }
             kwargs.pop(remove_arg)
             with pytest.raises(ValueError):

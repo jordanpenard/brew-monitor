@@ -1,7 +1,7 @@
 from typing import Type
 
 from brewmonitor.configuration import Configuration
-from brewmonitor.storage.tables import BaseTable, Sensor, Project, Datapoint, User
+from brewmonitor.storage.tables import BaseTable, Datapoint, Project, Sensor, User
 
 
 tables = (

@@ -1,10 +1,9 @@
 from http import HTTPStatus
 
 import pytest
-from flask import url_for
-
 from brewmonitor.storage.tables import Project, Sensor
-from test_brewmonitor.conftest import config_from_client, find_project, find_sensor
+from flask import url_for
+from test_brewmonitor.conftest import config_from_client, find_project
 from test_brewmonitor.utils import MultiClientBase
 
 
@@ -95,10 +94,11 @@ class TestChangeProjectSensor:
     # We should probably limit this to the owner or an admin.
     # Meanwhile we test for it in every view that modifies the project.
     #
-    # We do not have to test that "Project.attach_sensor" first detaches the sensor if it's
-    # already attached because we should be testing that in the storage tests.
+    # We do not have to test that "Project.attach_sensor" first detaches the sensor if
+    # it's already attached because we should be testing that in the storage tests.
     #
-    # We also check the redirect works (to_sensor) because this endpoint is contacted by the sensor page as well.
+    # We also check the redirect works (to_sensor) because this endpoint is contacted by
+    # the sensor page as well.
 
     def test_public_redirect(self, public_client, other_project):
         target = url_for('accessor.change_project_sensor', project_id=other_project.id)
@@ -131,7 +131,15 @@ class TestChangeProjectSensor:
         assert resp.location == redirect
 
     @pytest.mark.parametrize('to_sensor', (True, False))
-    def test_user_change_sensor(self, user_client, normal_user, other_project, other_sensor, new_sensor_data, to_sensor):
+    def test_user_change_sensor(
+        self,
+        user_client,
+        normal_user,
+        other_project,
+        other_sensor,
+        new_sensor_data,
+        to_sensor,
+    ):
         # a sensor is attached but we change it
         assert other_project.owner != normal_user.username
         bm_config = config_from_client(user_client.application)

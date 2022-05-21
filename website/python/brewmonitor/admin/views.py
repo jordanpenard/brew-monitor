@@ -1,13 +1,11 @@
-from flask import url_for, redirect
-
 # noinspection PyUnresolvedReferences
-import brewmonitor.admin.project_views
+import brewmonitor.admin.project_views  # noqa
 # noinspection PyUnresolvedReferences
-import brewmonitor.admin.sensor_views
+import brewmonitor.admin.sensor_views  # noqa
 # noinspection PyUnresolvedReferences
-import brewmonitor.admin.user_views
-
+import brewmonitor.admin.user_views  # noqa
 from brewmonitor.admin._app import admin_bp
+from flask import redirect, url_for
 
 
 @admin_bp.route('/', methods=['GET'])

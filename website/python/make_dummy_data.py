@@ -4,7 +4,7 @@ from typing import Optional
 
 from brewmonitor.configuration import Configuration
 from brewmonitor.schema import initialise_db
-from brewmonitor.storage.tables import Sensor, Project, Datapoint, User
+from brewmonitor.storage.tables import Datapoint, Project, Sensor, User
 
 
 def _past(when: datetime, **kwargs) -> datetime:
@@ -30,11 +30,11 @@ def make_dummy_data(config: Configuration, admin_pwd: str, when: Optional[dateti
 
         # Set a min and max battery only for 2 sensors
         conn.execute(
-            '''
-                update Sensor set min_battery=1, max_battery=10
-                where id!=?
-            ''',
-            (sad_sensor.id,)
+            """
+            update Sensor set min_battery=1, max_battery=10
+            where id!=?
+            """,
+            (sad_sensor.id,),
         )
 
         ale = Project.create(conn, 'Brown Ale #12', u1)

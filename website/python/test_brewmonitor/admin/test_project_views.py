@@ -1,10 +1,10 @@
 from http import HTTPStatus
 
 import pytest
-from flask import url_for
-
 from brewmonitor.storage.tables import Project
+from flask import url_for
 from test_brewmonitor.conftest import config_from_client
+
 
 pages = (
     ('GET', 'admin.all_projects', {}),

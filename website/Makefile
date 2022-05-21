@@ -8,6 +8,7 @@ clean-style:
 	$(MAKE) check-style
 
 check-style:
+	isort python/ --check
 	flake8 python/
 
 tests:

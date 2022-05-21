@@ -1,13 +1,12 @@
 from http import HTTPStatus
 
+from brewmonitor.admin._app import admin_bp
+from brewmonitor.decorators import admin_required
+from brewmonitor.storage import access
 from flask import request, url_for
 from flask_mako import render_template
 from werkzeug.exceptions import abort
 from werkzeug.utils import redirect
-
-from brewmonitor.admin._app import admin_bp
-from brewmonitor.decorators import admin_required
-from brewmonitor.storage import access
 
 
 @admin_bp.route('/users')

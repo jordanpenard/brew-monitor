@@ -1,9 +1,9 @@
 import dataclasses
-from typing import List, Dict, Tuple
-
-from flask import url_for
+from typing import Dict, List, Tuple
 
 from brewmonitor.storage.tables import Datapoint, Sensor
+from flask import url_for
+
 
 # A dictionary that contains the Plotly trace fields.
 TraceDict = Dict
@@ -18,7 +18,7 @@ class SensorTraces:
         self.traces[trace] = {
             'x': [],
             'y': [],
-            'name': f"{self.name} {trace}",
+            'name': f'{self.name} {trace}',
             'type': 'scatter',
             'yaxis': yaxis,
         }
@@ -72,7 +72,7 @@ def build_view_data(
         if st is None:
             sensor = sensor_info.get(entry.sensor_id)
             if sensor is None:
-                sensor_name = f"sensor {entry.sensor_id}"
+                sensor_name = f'sensor {entry.sensor_id}'
             else:
                 sensor_name = sensor.name
             st = SensorTraces(sensor_name)

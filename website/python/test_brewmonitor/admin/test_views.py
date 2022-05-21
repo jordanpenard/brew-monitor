@@ -1,7 +1,6 @@
 from http import HTTPStatus
 
 from flask import url_for
-
 from test_brewmonitor.utils import MultiClientBase
 
 

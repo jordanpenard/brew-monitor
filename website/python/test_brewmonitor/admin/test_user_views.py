@@ -1,10 +1,10 @@
 from http import HTTPStatus
 
 import pytest
-from flask import url_for
-
 from brewmonitor.storage.tables import User
+from flask import url_for
 from test_brewmonitor.conftest import config_from_client, find_user
+
 
 pages = (
     ('GET', 'admin.all_users', {}),

@@ -1,12 +1,11 @@
 from http import HTTPStatus
-from typing import Optional, Iterable, Tuple, List, Any
+from typing import Any, Iterable, List, Optional, Tuple
 
 import attr
-from flask import Response
-from flask_csv import send_csv
-
 from brewmonitor import json
 from brewmonitor.storage.tables import Datapoint
+from flask import Response
+from flask_csv import send_csv
 
 
 def json_response(

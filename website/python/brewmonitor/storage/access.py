@@ -1,12 +1,9 @@
-from typing import Dict, List, Optional, AnyStr, Tuple
+from typing import AnyStr, Dict, List, Optional, Tuple
 
 import attr
-from flask import current_app
-
 from brewmonitor.configuration import SQLConnection, config
-
-
-from brewmonitor.storage.tables import Sensor, Project, Datapoint, User
+from brewmonitor.storage.tables import Datapoint, Project, Sensor, User
+from flask import current_app
 
 
 @attr.s
@@ -15,7 +12,7 @@ class ProjectData(Project):
     data_points = attr.ib(type=list, default=attr.Factory(list))  # type: List[Datapoint]
 
     @classmethod
-    def get_data(cls, db_conn: SQLConnection, project_id: int) -> Optional["ProjectData"]:
+    def get_data(cls, db_conn: SQLConnection, project_id: int) -> Optional['ProjectData']:
         project_data = cls.find(db_conn, project_id=project_id)
         if not project_data:
             return
@@ -45,7 +42,7 @@ class SensorData(Sensor):
     data_points = attr.ib(type=list, factory=list)  # type: List[Datapoint]
 
     @classmethod
-    def get_data(cls, db_conn: SQLConnection, sensor_id: int) -> Optional["SensorData"]:
+    def get_data(cls, db_conn: SQLConnection, sensor_id: int) -> Optional['SensorData']:
         sensor_data = cls.find(db_conn, sensor_id)
         if not sensor_data:
             return

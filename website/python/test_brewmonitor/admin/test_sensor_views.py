@@ -2,10 +2,10 @@ from http import HTTPStatus
 
 import attr
 import pytest
-from flask import url_for
-
 from brewmonitor.storage.tables import Sensor
+from flask import url_for
 from test_brewmonitor.conftest import config_from_client
+
 
 pages = (
     ('GET', 'admin.all_sensors', {}),
@@ -53,7 +53,8 @@ class TestAdminViews:
 
     # TODO(tr) add test when updating an unknown sensor
     # TODO(tr) add test when updating owner_id
-    # TODO(tr) add test when updating with non integer owner_id, min_battery and max_battery, see #15
+    # TODO(tr) add test when updating with non integer owner_id, min_battery and
+    #  max_battery, see #15
 
     @pytest.mark.parametrize('new_sensor_data', (
         {'name': 'neo sensor 2'},

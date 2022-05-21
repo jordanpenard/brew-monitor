@@ -1,14 +1,13 @@
 from http import HTTPStatus
 
-from flask import url_for, request, redirect
-from flask_mako import render_template
-from flask_login import login_required, current_user
-from werkzeug.exceptions import abort
-
 from brewmonitor.accessor._app import accessor_bp
 from brewmonitor.accessor.utils import build_view_data
 from brewmonitor.storage import access
 from brewmonitor.utils import export_data
+from flask import redirect, request, url_for
+from flask_login import current_user, login_required
+from flask_mako import render_template
+from werkzeug.exceptions import abort
 
 
 @accessor_bp.route('/sensor', methods=['GET'])
@@ -17,7 +16,7 @@ def all_sensors():
     return render_template(
         'accessor/sensor.html.mako',
         elem_links=access.get_sensors(),
-        show_add_sensor=current_user.is_authenticated
+        show_add_sensor=current_user.is_authenticated,
     )
 
 
@@ -33,7 +32,8 @@ def get_sensor(sensor_id):
     prev_link_projects = sensor.projects
     management_link = None
     if linked_project:
-        # pop the active project so it doesn't show twice in "linked project" and "previously linked project" sections
+        # pop the active project so it doesn't show twice in "linked project" and
+        # "previously linked project" sections
         if linked_project.id in prev_link_projects:
             prev_link_projects.pop(linked_project.id)
         # Def is None so that it's undefined if we don't have a linked project.
@@ -58,7 +58,7 @@ def get_sensor(sensor_id):
         sensor_info={sensor.id: sensor},
         delete_next=delete_next,
     )
-    
+
     return render_template(
         'accessor/view_sensor.html.mako',
         elem_obj=sensor,

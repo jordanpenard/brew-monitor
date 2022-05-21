@@ -7,12 +7,12 @@ from typing import Optional
 
 import pytest
 import yaml
-from flask import Flask
-
 from brewmonitor.app import make_app
 from brewmonitor.configuration import Configuration
-from brewmonitor.storage.tables import User, Sensor, Project
+from brewmonitor.storage.tables import Project, Sensor, User
+from flask import Flask
 from make_dummy_data import make_dummy_data
+
 
 test_config = {
     'flask configuration': {
@@ -53,7 +53,8 @@ preset_when = datetime(2021, 11, 26, 11, 34)
 def preset_app() -> Flask:
     """
     Creates a clean db but keeps it in between tests. Remember to clean if modified.
-    Returns the app, the test client is not created and the app_context is not initialised.
+    Returns the app, the test client is not created and the app_context is not
+    initialised.
     """
     with NamedTemporaryFile() as config_file:
         with NamedTemporaryFile() as db_file:
@@ -73,11 +74,11 @@ def public_client(preset_app):
 
 def find_user(db_conn, username: str) -> Optional[User]:
     cursor = db_conn.execute(
-        '''
-            select id
-            from User
-            where username=?
-        ''',
+        """
+        select id
+        from User
+        where username=?
+        """,
         (username,),
     )
     # cursor.row_factory = User.row_factory
@@ -89,11 +90,11 @@ def find_user(db_conn, username: str) -> Optional[User]:
 
 def find_sensor(db_conn, sensor_name: str) -> Optional[Sensor]:
     cursor = db_conn.execute(
-        '''
-            select id
-            from Sensor
-            where name=?
-        ''',
+        """
+        select id
+        from Sensor
+        where name=?
+        """,
         (sensor_name,),
     )
     # cursor.row_factory = Sensor.row_factory
@@ -105,11 +106,11 @@ def find_sensor(db_conn, sensor_name: str) -> Optional[Sensor]:
 
 def find_project(db_conn, project_name: str) -> Optional[Project]:
     cursor = db_conn.execute(
-        '''
-            select id
-            from Project
-            where name=?
-        ''',
+        """
+        select id
+        from Project
+        where name=?
+        """,
         (project_name,),
     )
     project = cursor.fetchone()
