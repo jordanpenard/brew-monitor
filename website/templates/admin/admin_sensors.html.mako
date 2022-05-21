@@ -8,8 +8,6 @@
     <h1 class="title">Admin sensors</h1>
 </%block>
 
-${parent.add_sensor_view()}
-
 <script type="text/javascript">
 
 function show_confirm(id, name, url) {
