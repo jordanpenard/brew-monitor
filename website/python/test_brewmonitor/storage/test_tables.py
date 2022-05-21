@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
+from brewmonitor.storage.access import ProjectData
 from brewmonitor.storage.tables import Sensor, Project, Datapoint, User, BaseTable
 from test_brewmonitor.conftest import config_from_client, preset_when
 
@@ -560,6 +561,37 @@ class TestProject:
 
             db_project.attach_sensor(conn, sensor_b.id)
             assert db_project.active_sensor == sensor_b.id
+
+    def test_move_sensor(self, tmp_app):
+        bm_config = config_from_client(tmp_app)
+
+        with bm_config.db_connection() as conn:
+            owner = User.create(conn, username='user', password='pass', is_admin=False)
+            project_a = Project.create(conn, name='project a', owner=owner)
+            project_b = Project.create(conn, name='project a', owner=owner)
+
+            assert project_a.active_sensor is None, 'initially no sensor attached'
+            assert project_b.active_sensor is None, 'initially no sensor attached'
+
+            sensor_a = Sensor.create(conn, name='sensor a', secret='secret', owner=owner)
+            sensor_b = Sensor.create(conn, name='sensor b', secret='secret', owner=owner)
+
+            project_a.attach_sensor(conn, sensor_a.id)
+            project_b.attach_sensor(conn, sensor_b.id)
+
+        with bm_config.db_connection() as conn:
+            # check that if we now attach sensor_b to project_a
+            project_a.attach_sensor(conn, sensor_b.id)
+
+            project_a = Project.find(conn, project_a.id)  # update the object, redundant
+            project_b = Project.find(conn, project_b.id)  # update the object
+            sensor_a_project = ProjectData.by_active_sensor(conn, sensor_a.id)
+            sensor_b_project = ProjectData.by_active_sensor(conn, sensor_b.id)
+
+        assert project_a.active_sensor == sensor_b.id
+        assert project_b.active_sensor is None
+        assert sensor_b_project.id == project_a.id
+        assert sensor_a_project is None
 
     def test_detach_sensor(self, tmp_app):
         bm_config = config_from_client(tmp_app)

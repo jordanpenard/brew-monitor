@@ -103,6 +103,21 @@ def find_sensor(db_conn, sensor_name: str) -> Optional[Sensor]:
     return None
 
 
+def find_project(db_conn, project_name: str) -> Optional[Project]:
+    cursor = db_conn.execute(
+        '''
+            select id
+            from Project
+            where name=?
+        ''',
+        (project_name,),
+    )
+    project = cursor.fetchone()
+    if project is not None:
+        return Project.find(db_conn, project[0])
+    return None
+
+
 @pytest.fixture
 def normal_user(preset_app):
     bm_config = config_from_client(preset_app)
@@ -176,9 +191,10 @@ def new_user_data(preset_app):
 
 @pytest.fixture
 def new_sensor_data(preset_app):
-    """Create some sensor data assuming it will be created and delete it afterwards
+    """Create some sensor data assuming it will be created in a test.
+    Delete the sensor after the test if it still exists.
 
-    Do NOT change the name in the test
+    Do NOT change the name in the test otherwise the deletion will fail.
     """
     sensor_data = {
         # TODO(tr) make the name random
@@ -212,6 +228,26 @@ def other_sensor(preset_app, admin_user):
         if s:
             print(f'Deleting {s}')
             s.delete(conn)
+
+
+@pytest.fixture
+def new_project_data(preset_app):
+    """Create some project data assuming it will be created in a test.
+    Delete the project after the test if it still exists.
+
+    Do NOT change the name in the test otherwise the deletion will fail.
+    """
+    project_data = {
+        # TODO(tr) make the name random
+        'name': 'new project',
+    }
+    yield project_data
+    bm_config = config_from_client(preset_app)
+    with bm_config.db_connection() as conn:
+        project = find_project(conn, project_data['name'])
+        if project:
+            print(f'Deleting {project}')
+            project.delete(conn)
 
 
 @pytest.fixture

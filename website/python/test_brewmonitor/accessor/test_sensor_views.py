@@ -1,6 +1,5 @@
 from http import HTTPStatus
 
-import pytest
 from flask import url_for
 
 from test_brewmonitor.conftest import config_from_client, find_sensor, public_client, admin_client, user_client
@@ -13,17 +12,6 @@ class TestAllSensors(MultiClientBase):
         assert resp.status_code == HTTPStatus.OK
 
     # TODO(tr) add test to check that authenticated users can see "add sensor"
-
-
-class ConsumeClient:
-    def __init__(self, client_fn):
-        self.client_fn = client_fn
-
-    def __enter__(self):
-        return self.client_fn()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.client_fn()
 
 
 class TestGetSensorOk(MultiClientBase):
@@ -77,7 +65,7 @@ class TestGetSensorDataBadRequest(MultiClientBase):
         assert resp.status_code == HTTPStatus.BAD_REQUEST
 
 
-class TestAddSensorData:
+class TestAddSensor:
 
     def test_public_redirect(self, public_client):
         target = url_for('accessor.add_sensor')
