@@ -11,8 +11,7 @@ check-style:
 	isort python/ --check
 	flake8 python/
 
-tests:
-	pytest
-
 tests-coverage:
 	pytest --cov=brewmonitor
+
+ci-checks: check-style tests-coverage

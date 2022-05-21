@@ -22,7 +22,7 @@ Create a python virtual env with the required libraries :
 ```
 $> python3.9 -m venv venv
 $> source venv/bin/activate
-(venv) $> pip install -r requirements.txt
+(venv) $> make install-dev
 ```
 
 Create the scratch folder where the debug db will be stored and optionally create dummy data:
@@ -49,7 +49,7 @@ By default, it will run on [http://localhost:5000/]()
 We use `pytest` for the unit tests. Follow the same steps than to run a debug setup (venv) and simply run:
 
 ```
-(venv) $> pytest python/test_brewmonitor/
+(venv) $> pytest
 ```
 
 Note: if you install the packages globally (i.e. the production example) you may not need the venv to run the tests.
@@ -60,11 +60,29 @@ Note: if you install the packages globally (i.e. the production example) you may
 `pytest-cov` can be used to check the coverage of the unit tests, one can check the coverage by running:
 
 ```
-(venv) $> pytest --cov=brewmonitor python/test_brewmonitor/
+(venv) $> make tests-coverage
 ```
 
 Once run one can also use `coverage html` to generate a more detailed report.
 
+
+### Check style
+
+We use `flake8` and `isort` to check our code sytle.
+
+During development use the following command to clean imports and highlight issues:
+```
+(venv) $> make clean-style
+```
+
+### CI integration
+
+We use github CI integration. To simplify the steps are:
+
+```
+(venv) $> make install-dev
+(venv) $> make ci-checks
+```
 
 ## Production server install (FreeBSD/Apache/WSGI)
 

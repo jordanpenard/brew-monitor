@@ -23,12 +23,12 @@ jobs:
         python-version: "3.9"
     - name: Install website dependencies
       run: |
-        cd website
+        pushd website
         make install-dev
-    - name: Lint website
-      run: |
-        make check-style
+        popd
     - name: Test website
       run: |
-        make tests-coverage
+        pushd website
+        make ci-checks
+        popd
 
