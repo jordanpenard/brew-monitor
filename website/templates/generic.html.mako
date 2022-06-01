@@ -110,9 +110,9 @@
                             <i class="fas fa-tools"></i> Admin
                             </a>
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownAdmin">
-                              <a class="dropdown-item" href="${url_for('admin.admin_users')}">Users</a>
-                              <a class="dropdown-item" href="${url_for('admin.admin_projects')}">Projects</a>
-                              <a class="dropdown-item" href="${url_for('admin.admin_sensors')}">Sensor</a>
+                              <a class="dropdown-item" href="${url_for('admin.all_users')}">Users</a>
+                              <a class="dropdown-item" href="${url_for('admin.all_projects')}">Projects</a>
+                              <a class="dropdown-item" href="${url_for('admin.all_sensors')}">Sensor</a>
                             </div>
                         </li>
                     % endif
@@ -131,7 +131,7 @@
                                     % if current_user.is_admin:
                                     <i class="fas fa-user"></i>
                                     % endif
-                                    ${current_user.name}
+                                    ${current_user.username}
                                 </a>
                             </li>
                             <li class="nav-item" id="logout_nav_item">
@@ -164,3 +164,4 @@
     </div>
 </body>
 </html>
+

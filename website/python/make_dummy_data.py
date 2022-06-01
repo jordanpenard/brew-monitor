@@ -1,86 +1,79 @@
 import os
-import bcrypt
 from datetime import datetime, timedelta
+from typing import Optional
 
-from brewmonitor.schema import initialise_db
 from brewmonitor.configuration import Configuration
+from brewmonitor.schema import initialise_db
+from brewmonitor.storage.tables import Datapoint, Project, Sensor, User
 
 
-def _past(n_min) -> datetime:
-    return datetime.now() - timedelta(minutes=5 * n_min)
+def _past(when: datetime, **kwargs) -> datetime:
+    return when - timedelta(**kwargs)
 
 
-def make_dummy_data(config: Configuration, admin_pwd: str):
+def make_dummy_data(config: Configuration, admin_pwd: str, when: Optional[datetime] = None):
+    # Changing this will affect unit tests.
+    if when is None:
+        when = datetime.now()
+
     initialise_db(config)
 
     with config.db_connection() as conn:
+        print('Creating content...')
 
-        other_password = b'pass'
-        salt1 = bcrypt.gensalt()
-        salt2 = bcrypt.gensalt()
-        hashed_password1 = bcrypt.hashpw(admin_pwd.encode('utf-8'), salt1)
-        hashed_password2 = bcrypt.hashpw(other_password, salt2)
+        u1 = User.create(conn, 'toto', admin_pwd, True)
+        u2 = User.create(conn, 'titi', 'pass', False)
 
+        green = Sensor.create(conn, 'green sensor', 'secret', u1)
+        brown = Sensor.create(conn, 'brown sensor', 'secret', u2)
+        sad_sensor = Sensor.create(conn, 'sad sensor', 'secret', u1)
+
+        # Set a min and max battery only for 2 sensors
         conn.execute(
-            '''
-            insert into User (username, password, is_admin)
-            values ('toto', ?, true), ('titi', ?, false);
-            ''',
-            (hashed_password1, hashed_password2)
+            """
+            update Sensor set min_battery=1, max_battery=10
+            where id!=?
+            """,
+            (sad_sensor.id,),
         )
-        conn.execute(
-            '''
-            insert into Sensor (name, secret, owner, min_battery, max_battery)
-            values 
-            ('green sensor', 'secret', 1, 1, 10),
-            ('brown sensor', 'secret', 1, 2, 20),
-            ('sad sensor', 'secret', 1, null, null)
-            ;
-            '''
-        )
-        conn.execute(
-            '''
-            insert into Project (name, active_sensor, owner)
-            values ('Brown Ale #12', 1, 1), ('Super IPA', 2, 1), ('Sad project', null, 1);
-            '''
-        )
+
+        ale = Project.create(conn, 'Brown Ale #12', u1)
+        ipa = Project.create(conn, 'Super IPA', u1)
+        _ = Project.create(conn, 'Sad project', u1)
+
+        ale.attach_sensor(conn, green.id)
+        ipa.attach_sensor(conn, brown.id)
 
         data_points = [
-            (1, 1, _past(24 * 3600 + 60), 20, 25.0, 10.0),
-            (1, 1, _past(24 * 3600 + 55), 18, 24.0, 9.8),
-            (1, 1, _past(24 * 3600 + 50), 16, 23.5, 9.8),
-            (1, 1, _past(24 * 3600 + 45), 14, 23.0, 9.7),
+            Datapoint(green.id, ale.id, _past(when, days=1, minutes=60), 20, 25.0, 10.0),
+            Datapoint(green.id, ale.id, _past(when, days=1, minutes=55), 18, 24.0, 9.8),
+            Datapoint(green.id, ale.id, _past(when, days=1, minutes=50), 16, 23.5, 9.8),
+            Datapoint(green.id, ale.id, _past(when, days=1, minutes=45), 14, 23.0, 9.7),
             # Missing 40
-            (1, 1, _past(24 * 3600 + 35), 10, 22.0, 9.6),
-            (1, 1, _past(24 * 3600 + 30), 8, 21.0, 9.5),
-            (1, 1, _past(24 * 3600 + 25), 6, 20.0, 9.4),
+            Datapoint(green.id, ale.id, _past(when, days=1, minutes=35), 10, 22.0, 9.6),
+            Datapoint(green.id, ale.id, _past(when, days=1, minutes=30), 8, 21.0, 9.5),
+            Datapoint(green.id, ale.id, _past(when, days=1, minutes=25), 6, 20.0, 9.4),
 
             # As if sensor 2 wasn't configured properly at first
-            (2, None, _past(120), 40, 25.0, 7.5),
-            (2, None, _past(115), 35, 24.0, 7.4),
-            (2, None, _past(110), 30, 23.5, 7.3),
-            (2, None, _past(105), 25, 23.0, 7.2),
-            (2, None, _past(100), 20, 23.0, 7.1),
-            (2, None, _past(95), 15, 22.0, 7.0),
-            (2, None, _past(90), 10, 21.0, 6.9),
-            (2, None, _past(85), 5, 20.0, 6.8),
+            Datapoint(brown.id, None, _past(when, minutes=120), 40, 25.0, 7.5),
+            Datapoint(brown.id, None, _past(when, minutes=115), 35, 24.0, 7.4),
+            Datapoint(brown.id, None, _past(when, minutes=110), 30, 23.5, 7.3),
+            Datapoint(brown.id, None, _past(when, minutes=105), 25, 23.0, 7.2),
+            Datapoint(brown.id, None, _past(when, minutes=100), 20, 23.0, 7.1),
+            Datapoint(brown.id, None, _past(when, minutes=95), 15, 22.0, 7.0),
+            Datapoint(brown.id, None, _past(when, minutes=90), 10, 21.0, 6.9),
+            Datapoint(brown.id, None, _past(when, minutes=85), 5, 20.0, 6.8),
 
-            (2, 2, _past(60), 40, 25.0, 3.0),
-            (2, 2, _past(55), 35, 24.0, 3.5),
-            (2, 2, _past(50), 30, 23.5, 3.4),
-            (2, 2, _past(45), 25, 23.0, 3.3),
-            (2, 2, _past(40), 20, 23.0, 3.2),
-            (2, 2, _past(35), 15, 22.0, 3.1),
-            (2, 2, _past(30), 10, 21.0, 3.0),
-            (2, 2, _past(25), 5, 20.0, 2.9),
+            Datapoint(brown.id, ipa.id, _past(when, minutes=60), 40, 25.0, 3.0),
+            Datapoint(brown.id, ipa.id, _past(when, minutes=55), 35, 24.0, 3.5),
+            Datapoint(brown.id, ipa.id, _past(when, minutes=50), 30, 23.5, 3.4),
+            Datapoint(brown.id, ipa.id, _past(when, minutes=45), 25, 23.0, 3.3),
+            Datapoint(brown.id, ipa.id, _past(when, minutes=40), 20, 23.0, 3.2),
+            Datapoint(brown.id, ipa.id, _past(when, minutes=35), 15, 22.0, 3.1),
+            Datapoint(brown.id, ipa.id, _past(when, minutes=30), 10, 21.0, 3.0),
+            Datapoint(brown.id, ipa.id, _past(when, minutes=25), 5, 20.0, 2.9),
         ]
-        conn.executemany(
-            '''
-            insert into Datapoint (sensor_id, project_id, timestamp, angle, temperature, battery)
-            values (?, ?, datetime(?), ?, ?, ?);
-            ''',
-            data_points
-        )
+        Datapoint.create_many(conn, data_points)
 
 
 if __name__ == '__main__':
@@ -88,7 +81,7 @@ if __name__ == '__main__':
 
     parser = ArgumentParser()
     parser.add_argument('--admin-password', type=str, default='admin')
-    parser.add_argument('--clear', action='store_true')
+    parser.add_argument('--clear', action='store_true', help='First clear the data')
 
     args = parser.parse_args()
 

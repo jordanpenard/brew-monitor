@@ -1,8 +1,9 @@
-import yaml
 import sqlite3
 from typing import Dict
 
+import yaml
 from flask import current_app
+
 
 SQLConnection = sqlite3.Connection
 
@@ -13,7 +14,7 @@ class Configuration:
         self._raw_config = raw_config
 
     @classmethod
-    def load(cls, filename: str) -> "Configuration":
+    def load(cls, filename: str) -> 'Configuration':
         return cls(yaml.safe_load(open(filename)))
 
     @property

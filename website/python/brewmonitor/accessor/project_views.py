@@ -1,13 +1,12 @@
 from http import HTTPStatus
 
-from flask import abort, url_for, request, redirect
-from flask_login import login_required, current_user
-from flask_mako import render_template
-
 from brewmonitor.accessor._app import accessor_bp
 from brewmonitor.accessor.utils import build_view_data
 from brewmonitor.storage import access
 from brewmonitor.utils import export_data
+from flask import abort, redirect, request, url_for
+from flask_login import current_user, login_required
+from flask_mako import render_template
 
 
 @accessor_bp.route('/project', methods=['GET'])
@@ -16,7 +15,7 @@ def all_projects():
     return render_template(
         'accessor/project.html.mako',
         elem_links=access.get_projects(),
-        show_add_project=current_user.is_authenticated
+        show_add_project=current_user.is_authenticated,
     )
 
 
@@ -27,13 +26,15 @@ def get_project(project_id):
     if project is None:
         abort(HTTPStatus.NOT_FOUND)
 
-    prev_link_sensors = project.sensors
+    prev_link_sensors = []
     linked_sensor = None
-    if project.active_sensor:
+    if project.active_sensor is not None:
         linked_sensor = access.get_sensor(project.active_sensor)
-        # pop the active sensor so it doesn't show twice in "linked sensor" and "previously linked sensor" sections
-        if project.active_sensor in prev_link_sensors:
-            prev_link_sensors.pop(project.active_sensor)
+        for s in project.sensors.values():
+            if s.id != project.active_sensor:
+                prev_link_sensors.append(s)
+        # ignore the active sensor so it doesn't show twice in "linked sensor"
+        # and "previously linked sensor" sections
 
     export_data_links = [
         {
@@ -64,19 +65,20 @@ def get_project(project_id):
         management_link = url_for('accessor.change_project_sensor', project_id=project_id)
 
     delete_next = url_for('accessor.get_project', project_id=project_id, _anchor=f'{project.id}_table')
-    
+
     datatable, plot = build_view_data(
         'project',
         data_points=project.data_points,
+        sensor_info=project.sensors,
         delete_next=delete_next,
     )
-    
+
     return render_template(
         'accessor/view_project.html.mako',
         elem_obj=project,
         elem_name=project.name,
         elem_id=project.id,
-        elem_links=prev_link_sensors.values(),
+        elem_links=prev_link_sensors,
         data_links=export_data_links,
         datatable=datatable,
         plot=plot,
@@ -101,8 +103,8 @@ def get_project_data(project_id, out_format):
 @login_required
 def add_project():
 
-    project_id = access.insert_project(request.form['name'], current_user.id)
-    return redirect(url_for('accessor.get_project', project_id=project_id))
+    project = access.insert_project(request.form['name'], current_user)
+    return redirect(url_for('accessor.get_project', project_id=project.id))
 
 
 @accessor_bp.route('/project/<project_id>/change_sensor', methods=['POST'])
@@ -119,7 +121,7 @@ def change_project_sensor(project_id):
     if sensor_id == 'null':
         sensor_id = None
     else:
-        sensor = access.get_sensor(sensor_id)
+        sensor = access.get_sensor(int(sensor_id))
         if sensor is None:
             abort(HTTPStatus.NOT_FOUND)
 
@@ -127,10 +129,16 @@ def change_project_sensor(project_id):
     return redirect(next_)
 
 
-@accessor_bp.route('/datapoint/remove/<datapoint_id>', methods=['POST'])
+@accessor_bp.route('/datapoint/<datapoint_id>/delete', methods=['POST'])
 @login_required
 def remove_datapoint(datapoint_id):
-
     next_ = request.args.get('next') or url_for('accessor.all_projects')
-    access.remove_datapoint(datapoint_id)
+
+    datapoint = access.get_datapoint(datapoint_id)
+    if datapoint is None:
+        abort(HTTPStatus.NOT_FOUND)
+
+    # TODO(tr) check if the current_user is an admin or the owner of that project?
+
+    access.remove_datapoint(datapoint)
     return redirect(next_)

@@ -1,496 +1,63 @@
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, AnyStr, Tuple
+from typing import AnyStr, Dict, List, Optional, Tuple
 
 import attr
-from flask import url_for
-
 from brewmonitor.configuration import SQLConnection, config
-
-
-@attr.s
-class Sensor:
-    id = attr.ib(type=int)
-    name = attr.ib(type=str)
-    secret = attr.ib(type=str)
-    owner = attr.ib(type=str)
-    last_active = attr.ib(type=datetime, default=None)  # in SQL we would get that from the datapoints
-    last_battery = attr.ib(type=float, default=None)
-    max_battery = attr.ib(type=float, default=None)
-    min_battery = attr.ib(type=float, default=None)
-    linked_project = attr.ib(type=int, default=None) # Assuming a sensor is only attached to 1 project
-
-    @classmethod
-    def row_factory(cls, _cursor, _row) -> "Sensor":
-        d = {
-            col[0]: _row[idx]
-            for idx, col in enumerate(_cursor.description)
-        }
-        return cls(
-            d['id'],
-            d['name'],
-            d['secret'],
-            d['owner'],
-            datetime.fromisoformat(d['last_active']) if d['last_active'] else None,
-            d['last_battery'],
-            d['max_battery'],
-            d['min_battery'],
-            d['linked_project'],
-        )
-
-    @classmethod
-    def get_all(cls, db_conn: SQLConnection) -> List["Sensor"]:
-        cursor = db_conn.execute(
-            '''
-            select id, name, secret, max_battery, min_battery, 
-                (select battery from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_battery,
-                (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active,
-                (select username from User where id = Sensor.owner limit 1) as owner,
-                (select id from Project where active_sensor = Sensor.id) as linked_project
-            from Sensor
-            order by id desc;
-            '''
-        )
-        cursor.row_factory = cls.row_factory
-        return cursor.fetchall()
-
-    @classmethod
-    def find(cls, db_conn: SQLConnection, sensor_id: int) -> Optional["Sensor"]:
-        sens_cursor = db_conn.execute(
-            '''
-            select id, name, secret, max_battery, min_battery, 
-                (select battery from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_battery,
-                (select timestamp from Datapoint where sensor_id = Sensor.id order by timestamp desc limit 1) as last_active,
-                (select username from User where id = Sensor.owner limit 1) as owner,
-                (select id from Project where active_sensor = Sensor.id) as linked_project
-            from Sensor where id = ?;
-            ''',
-            (sensor_id,)
-        )
-        sens_cursor.row_factory = cls.row_factory
-        return sens_cursor.fetchone()
-
-    @classmethod
-    def create_new(cls, db_conn: SQLConnection, name: AnyStr, secret: AnyStr, owner: int) -> int:
-        cursor = db_conn.cursor()
-        cursor.execute(
-            '''
-            insert into Sensor (name, secret, owner) values (?, ?, ?);
-            ''',
-            (name, secret, owner),
-        )
-        # lastrowid is the last successful insert on that cursor
-        return cursor.lastrowid
-
-    @classmethod
-    def edit(
-        cls,
-        db_conn: SQLConnection,
-        s_id: int,
-        new_name: AnyStr,
-        new_secret: AnyStr,
-        new_owner_id: int,
-        new_max_battery: int,
-        new_min_battery: int,
-    ):
-        db_conn.execute(
-            """
-            Update Sensor
-            set name=?, secret=?, owner=?, max_battery=?, min_battery=?
-            where id=?;
-            """,
-            (new_name, new_secret, new_owner_id, new_max_battery, new_min_battery, s_id),
-        )
-
-    @classmethod
-    def delete(cls, db_conn: SQLConnection, s_id: int):
-        db_conn.execute(
-            """
-            Delete from Datapoint where sensor_id=?;
-            """,
-            (s_id,),
-        )
-        db_conn.execute(
-            """
-            Update Project set 'active_sensor' = NULL where active_sensor=?;
-            """,
-            (s_id,),
-        )
-        db_conn.execute(
-            """
-            Delete from Sensor where id=?;
-            """,
-            (s_id,),
-        )
-
-    def last_active_str(self) -> str:
-        if self.last_active is not None:
-            return self.last_active.isoformat()
-        return 'No data'
-
-    def last_battery_pct(self) -> Optional[int]:
-        if self.last_battery is not None and self.max_battery is not None and self.min_battery is not None:
-            if self.last_battery > self.max_battery:
-                return 100
-            if self.last_battery < self.min_battery:
-                return 0
-            return int(((self.last_battery - self.min_battery)*100) / (self.max_battery - self.min_battery))
-        return None
-    
-    def battery_info(self):
-        value = self.last_battery_pct()
-        if value is None:
-            label = 'Unknown battery state'
-            icon = 'fa-question'
-        else:
-            label = f'{value}%'
-            if value > 80:
-                icon = 'fa-battery-full'
-            elif value > 60:
-                icon = 'fa-battery-three-quarters'
-            elif value > 40:
-                icon = 'fa-battery-half'
-            elif value > 20:
-                icon = 'fa-battery-quarter'
-            else:
-                icon = 'fa-battery-empty'
-        return {
-            'value': value,
-            'tooltip': label,
-            'icon': icon,
-        }
-
-    def is_linked(self) -> bool:
-        return bool(self.linked_project)
-
-    def get_link(self) -> str:
-        return url_for('accessor.get_sensor', sensor_id=self.id)
-
-    def get_name(self) -> str:
-        return self.name or '<deleted>'
-
-    def is_active(self) -> bool:
-        return self.last_active is not None and datetime.now() - self.last_active < timedelta(days=1)
-
-    def verify_identity(self, request_secret: str) -> bool:
-        # Return true if the secret provided by the request matches the sensor's secret from the db
-        return self.secret == request_secret
-
-
-@attr.s
-class Project:
-    id = attr.ib(type=int)
-    name = attr.ib(type=str)
-    owner = attr.ib(type=int)
-    active_sensor = attr.ib(type=int, default=None)  # Assuming 1 sensor per project but could change the sensor.
-    first_active = attr.ib(type=datetime, default=None)  # in SQL we would get that from the datapoints
-    last_active = attr.ib(type=datetime, default=None)  # in SQL we would get that from the datapoints
-    first_angle = attr.ib(type=float, default=None)
-    last_angle = attr.ib(type=float, default=None)
-    last_temperature = attr.ib(type=float, default=None)
-
-    @classmethod
-    def row_factory(cls, _cursor, _row) -> "Project":
-        d = {
-            col[0]: _row[idx]
-            for idx, col in enumerate(_cursor.description)
-        }
-        return cls(
-            d['id'],
-            d['name'],
-            d['owner'],
-            d['active_sensor'],
-            datetime.fromisoformat(d['first_active']) if d['first_active'] else None,
-            datetime.fromisoformat(d['last_active']) if d['last_active'] else None,
-            d['first_angle'],
-            d['last_angle'],
-            d['last_temperature'],
-        )
-
-    @classmethod
-    def get_all(cls, db_conn: SQLConnection) -> List["Project"]:
-        cursor = db_conn.execute(
-            '''
-            select id, name, active_sensor, 
-                (select timestamp from Datapoint where project_id = Project.id order by timestamp asc limit 1) as first_active, 
-                (select timestamp from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_active, 
-                (select angle from Datapoint where project_id = Project.id order by timestamp asc limit 1) as first_angle, 
-                (select angle from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_angle, 
-                (select temperature from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_temperature, 
-                (select username from User where id = Project.owner limit 1) as owner
-            from Project
-            order by id desc;
-            '''
-        )
-        # TODO(tr) Add order by last activity
-        cursor.row_factory = cls.row_factory
-        return cursor.fetchall()
-
-    @classmethod
-    def find(cls, db_conn: SQLConnection, project_id: int) -> "Project":
-        cursor = db_conn.execute(
-            '''
-            select id, name, active_sensor, 
-                (select timestamp from Datapoint where project_id = Project.id order by timestamp asc limit 1) as first_active, 
-                (select timestamp from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_active, 
-                (select angle from Datapoint where project_id = Project.id order by timestamp asc limit 1) as first_angle, 
-                (select angle from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_angle, 
-                (select temperature from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_temperature, 
-                (select username from User where id = Project.owner limit 1) as owner
-            from Project
-            where id = ?;
-            ''',
-            (project_id,)
-        )
-        cursor.row_factory = cls.row_factory
-        return cursor.fetchone()
-
-    @classmethod
-    def by_active_sensor(cls, db_conn: SQLConnection, sensor_id: int) -> Optional["Project"]:
-        proj_cursor = db_conn.execute(
-            '''
-            select id, name, active_sensor, 
-                (select timestamp from Datapoint where project_id = Project.id order by timestamp asc limit 1) as first_active, 
-                (select timestamp from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_active, 
-                (select angle from Datapoint where project_id = Project.id order by timestamp asc limit 1) as first_angle, 
-                (select angle from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_angle, 
-                (select temperature from Datapoint where project_id = Project.id order by timestamp desc limit 1) as last_temperature, 
-                (select username from User where id = Project.owner limit 1) as owner
-            from Project
-            where active_sensor = ?
-            order by id desc;
-            ''',
-            (sensor_id,)
-        )
-        proj_cursor.row_factory = cls.row_factory
-        return proj_cursor.fetchone()
-
-    @classmethod
-    def delete(cls, db_conn: SQLConnection, p_id: int):
-        db_conn.execute(
-            """
-            Delete from Datapoint where project_id=?;
-            """,
-            (p_id,)
-        )
-        db_conn.execute(
-            """
-            Delete from Project where id=?;
-            """,
-            (p_id,)
-        )
-
-    @classmethod
-    def edit(cls, db_conn: SQLConnection, p_id: int, new_name: AnyStr, new_owner_id: int):
-        db_conn.execute(
-            """
-            Update Project
-            set name=?, owner=?
-            where id=?;
-            """,
-            (new_name, new_owner_id, p_id),
-        )
-
-    @classmethod
-    def create_new(cls, db_conn: SQLConnection, name: AnyStr, owner: int) -> int:
-        cursor = db_conn.cursor()
-        cursor.execute(
-            '''
-            insert into Project (name, owner) values (?, ?);
-            ''',
-            (name, owner),
-        )
-        # lastrowid is the last successful insert on that cursor
-        return cursor.lastrowid
-
-    def last_active_str(self) -> str:
-        if self.last_active is not None:
-            return self.last_active.isoformat()
-        return 'No data'
-
-    def is_linked(self) -> bool:
-        return bool(self.active_sensor)
-
-    def get_link(self) -> str:
-        return url_for('accessor.get_project', project_id=self.id)
-
-    def get_name(self) -> str:
-        return self.name or '<deleted>'
-
-    def is_active(self) -> bool:
-        return self.last_active is not None and datetime.now() - self.last_active < timedelta(days=1)
-
-    def attach_sensor(self, db_conn: SQLConnection, sensor_id: Optional[int] = None) -> None:
-        """
-        Update the active sensor of a project. If None is provided as a sensor id then only detach
-        the current sensor.
-        """
-
-        if sensor_id is not None:
-            # Remove the sensor from any projects its currently attached to.
-            db_conn.execute(
-                '''
-                update Project set active_sensor = null
-                where active_sensor = ?;
-                ''',
-                (sensor_id,),
-            )
-            db_conn.execute(
-                '''
-                update Project set active_sensor = ?
-                where id = ?;
-                ''',
-                (sensor_id, self.id),
-            )
-        else:
-            db_conn.execute(
-                '''
-                update Project set active_sensor = null
-                where id = ?;
-                ''',
-                (self.id,),
-            )
-
-
-@attr.s
-class DataPoints:
-    sensor_id = attr.ib(type=int)
-    project_id = attr.ib(type=int)
-    timestamp = attr.ib(type=datetime)
-    angle = attr.ib(type=float)
-    temperature = attr.ib(type=float)
-    battery = attr.ib(type=float)
-    id = attr.ib(type=int, default=None)
-
-    def timestamp_as_str(self) -> str:
-        if self.timestamp:
-            return self.timestamp.isoformat()
-        return 'no data'
-
-    def temperature_as_str(self):
-        return f'{self.temperature:2.1f}'
-
-    def gravity_as_str(self):
-        return f'{self.gravity:1.3f}'
-
-    def battery_as_str(self):
-        # TODO(tr) Use calibration to know that.
-        return f'{self.battery:2.2f}'
-
-    def angle_as_str(self):
-        return f'{self.angle:3.1f}'
-
-    @property
-    def gravity(self):
-        # TODO(tr) Use an actual algorithm with the sensor's config to convert
-        # Transforms 45 to 1.045
-        return 1.0 + self.angle / 1000
-
-    def as_datatable(self):
-        return {
-            'when': {
-                'label': self.timestamp_as_str(),
-                'timestamp': self.timestamp.timestamp()
-            },
-            'gravity': self.gravity_as_str(),
-            'angle': self.angle_as_str(),
-            'temperature': self.temperature_as_str(),
-            'battery': self.battery_as_str(),
-        }
-
-    @classmethod
-    def row_factory(cls, _cursor, _row):
-        d = {}
-        for idx, col in enumerate(_cursor.description):
-            d[col[0]] = _row[idx]
-        return cls(
-            d['sensor_id'],
-            d['project_id'],
-            datetime.fromisoformat(d['timestamp']),
-            d['angle'],
-            d['temperature'],
-            d['battery'],
-            d['id'],
-        )
-
-    @classmethod
-    def get_all(
-        cls,
-        db_conn: SQLConnection,
-        project_id: Optional[int] = None,
-        sensor_id: Optional[int] = None,
-    ) -> List["DataPoints"]:
-        if project_id is not None:
-            data_cursor = db_conn.execute(
-                '''
-                select id, project_id, sensor_id, angle, temperature, battery, timestamp
-                from Datapoint
-                where project_id = ?;
-                ''',
-                (project_id,),
-            )
-        elif sensor_id is not None:
-            data_cursor = db_conn.execute(
-                '''
-                select id, project_id, sensor_id, angle, temperature, battery, timestamp
-                from Datapoint
-                where sensor_id = ?;
-                ''',
-                (sensor_id,),
-            )
-        else:
-            # Needs either a project or a sensor id.
-            raise NotImplementedError
-        data_cursor.row_factory = DataPoints.row_factory
-        return data_cursor.fetchall()
+from brewmonitor.storage.tables import Datapoint, Project, Sensor, User
+from flask import current_app
 
 
 @attr.s
 class ProjectData(Project):
     sensors = attr.ib(type=dict, default=attr.Factory(dict))  # type: Dict[int, Sensor]
-    data_points = attr.ib(type=list, default=attr.Factory(list))  # type: List[DataPoints]
+    data_points = attr.ib(type=list, default=attr.Factory(list))  # type: List[Datapoint]
 
     @classmethod
-    def get_data(cls, db_conn: SQLConnection, project_id: int) -> Optional["ProjectData"]:
-        project_data = cls.find(db_conn, project_id)
+    def get_data(cls, db_conn: SQLConnection, project_id: int) -> Optional['ProjectData']:
+        project_data = cls.find(db_conn, project_id=project_id)
         if not project_data:
             return
 
         sensor_ids = set()
-        for row in DataPoints.get_all(db_conn, project_id):
+        for row in Datapoint.get_all(db_conn, project_id):
             project_data.data_points.append(row)
             sensor_ids.add(row.sensor_id)
 
         # TODO(tr) do a sensor_id in []
         # TODO(tr) ensure the active sensor is first?
-        for _id in sensor_ids:
-            sensor = Sensor.find(db_conn, _id)
+        current_app.logger.debug(f'All sensors are: {str(sensor_ids)}')
+        for s_id in sensor_ids:
+            sensor = Sensor.find(db_conn, s_id)
             if sensor is not None:
-                project_data.sensors[_id] = sensor
+                project_data.sensors[s_id] = sensor
+                current_app.logger.debug(f'Found sensor_id={s_id}({type(s_id)}) is {str(sensor)}')
+            else:
+                current_app.logger.debug(f'Unknown sensor_id={s_id}')
 
         return project_data
 
 
 @attr.s
 class SensorData(Sensor):
-    projects = attr.ib(type=dict, default=attr.Factory(dict))  # type: Dict[int, Project]
-    data_points = attr.ib(type=list, default=attr.Factory(list))  # type: List[DataPoints]
+    projects = attr.ib(type=dict, factory=dict)  # type: Dict[int, Project]
+    data_points = attr.ib(type=list, factory=list)  # type: List[Datapoint]
 
     @classmethod
-    def get_data(cls, db_conn: SQLConnection, sensor_id: int) -> Optional["SensorData"]:
+    def get_data(cls, db_conn: SQLConnection, sensor_id: int) -> Optional['SensorData']:
         sensor_data = cls.find(db_conn, sensor_id)
         if not sensor_data:
             return
 
         project_ids = set()
-        for row in DataPoints.get_all(db_conn, sensor_id=sensor_id):
+        for row in Datapoint.get_all(db_conn, sensor_id=sensor_id):
             sensor_data.data_points.append(row)
-            project_ids.add(row.project_id)
+            if row.project_id is not None:
+                project_ids.add(row.project_id)
 
         # TODO(tr) Do a proper select id in []
-        for _id in project_ids:
-            project = Project.find(db_conn, _id)
+        for p_id in project_ids:
+            project = Project.find(db_conn, project_id=p_id)
             if project is not None:
-                sensor_data.projects[_id] = project
+                sensor_data.projects[p_id] = project
 
         return sensor_data
 
@@ -510,23 +77,41 @@ def get_sensor(sensor_id: int) -> Optional[Sensor]:
         return Sensor.find(db_conn, sensor_id)
 
 
+def edit_sensor(sensor: Sensor, name: str, secret: str, owner: User, max_battery: int, min_battery: int):
+    with config().db_connection() as db_conn:
+        return sensor.edit(
+            db_conn,
+            name=name,
+            secret=secret,
+            owner=owner,
+            max_battery=float(max_battery),
+            min_battery=float(min_battery),
+        )
+
+
+def remove_sensor(sensor: Sensor):
+    with config().db_connection() as db_conn:
+        return sensor.delete(db_conn)
+
+
 def get_active_project_for_sensor(sensor_id: int) -> Tuple[Optional[Sensor], Optional[Project]]:
     with config().db_connection() as db_conn:
         return Sensor.find(db_conn, sensor_id), ProjectData.by_active_sensor(db_conn, sensor_id)
 
 
-def insert_datapoints(datapoints: List[DataPoints]):
+def insert_datapoints(datapoints: List[Datapoint]):
     with config().db_connection() as db_conn:
-        db_conn.executemany(
-            '''
-            insert into Datapoint (sensor_id, project_id, timestamp, angle, temperature, battery)
-            values (?, ?, datetime(?), ?, ?, ?);
-            ''',
-            [
-                (d.sensor_id, d.project_id, d.timestamp, d.angle, d.temperature, d.battery)
-                for d in datapoints
-            ]
-        )
+        Datapoint.create_many(db_conn, datapoints)
+
+
+def edit_project(project: Project, name: str, owner: User):
+    with config().db_connection() as db_conn:
+        project.edit(db_conn, name, owner)
+
+
+def remove_project(project: Project):
+    with config().db_connection() as db_conn:
+        return project.delete(db_conn)
 
 
 def get_project_data(project_id: int) -> Optional[ProjectData]:
@@ -539,14 +124,14 @@ def get_sensor_data(sensor_id: int) -> Optional[SensorData]:
         return SensorData.get_data(db_conn, sensor_id)
 
 
-def insert_project(name: AnyStr, owner: int) -> int:
+def insert_project(name: AnyStr, owner: User) -> Project:
     with config().db_connection() as db_conn:
-        return Project.create_new(db_conn, name, owner)
+        return Project.create(db_conn, name, owner)
 
 
-def insert_sensor(name: AnyStr, secret: AnyStr, owner: int) -> int:
+def insert_sensor(name: AnyStr, secret: AnyStr, owner: User) -> Sensor:
     with config().db_connection() as db_conn:
-        return Sensor.create_new(db_conn, name, secret, owner)
+        return Sensor.create(db_conn, name, secret, owner)
 
 
 def update_project_sensor(project: Project, sensor_id: Optional[int] = None) -> None:
@@ -554,12 +139,31 @@ def update_project_sensor(project: Project, sensor_id: Optional[int] = None) -> 
         project.attach_sensor(db_conn, sensor_id)
 
 
-def remove_datapoint(datapoint_id: int):
+def get_datapoint(datapoint_id: int) -> Optional[Datapoint]:
     with config().db_connection() as db_conn:
-        db_conn.execute(
-            '''
-            delete from Datapoint
-            where id = ?;
-            ''',
-            (datapoint_id,)
-        )
+        return Datapoint.find(db_conn, datapoint_id=datapoint_id)
+
+
+def remove_datapoint(datapoint: Datapoint):
+    with config().db_connection() as db_conn:
+        datapoint.delete(db_conn)
+
+
+def get_users() -> List[User]:
+    with config().db_connection() as db_conn:
+        return User.get_all(db_conn)
+
+
+def get_user(user_id: int) -> Optional[User]:
+    with config().db_connection() as db_conn:
+        return User.find(db_conn, user_id)
+
+
+def insert_user(username: str, password: str, is_admin: bool) -> User:
+    with config().db_connection() as db_conn:
+        return User.create(db_conn, username, password, is_admin)
+
+
+def remove_user(user: User):
+    with config().db_connection() as db_conn:
+        return user.delete(db_conn)

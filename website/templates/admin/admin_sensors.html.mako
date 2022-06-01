@@ -34,9 +34,9 @@ function edit(id, url) {
     $("#delete_"+id).prop("disabled", true)
     
     owner_select = '<select name="sensor_owner_id" form="sensor_'+id+'">'
-    % for user in users:
-        owner_select += '<option id="owner_select_${user['username']}" value="${user['id']}">${user['username']}</option>'
-    % endfor
+% for user in users:
+    owner_select += '<option id="owner_select_${user.username}" value="${user.id}">${user.username}</option>'
+% endfor
     owner_select += '</select>'
     
     $("#sensor_owner_"+id).html(owner_select)
@@ -78,7 +78,7 @@ function edit(id, url) {
             </tr></thead>
             % for sensor in sensors:
             <tr>
-                <form id="sensor_${sensor.id}" method="post" action="${url_for('admin.edit_sensor', id=sensor.id)}"></form>
+                <form id="sensor_${sensor.id}" method="post" action="${url_for('admin.edit_sensor', sensor_id=sensor.id)}"></form>
                 <td>${sensor.id}</td>
                 <td id="sensor_name_${sensor.id}">${sensor.name}</td>
                 <td id="sensor_secret_${sensor.id}">${sensor.secret}</td>
@@ -86,7 +86,7 @@ function edit(id, url) {
                 <td id="sensor_max_battery_${sensor.id}">${sensor.max_battery}</td>
                 <td id="sensor_min_battery_${sensor.id}">${sensor.min_battery}</td>
                 <td>
-                    <button type="button" id="delete_${sensor.id}" onClick='show_confirm(${sensor.id}, "${sensor.name}", "${url_for('admin.delete_sensor', id=sensor.id)}")' class="btn btn-danger btn-sm"><i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i></button>
+                    <button type="button" id="delete_${sensor.id}" onClick='show_confirm(${sensor.id}, "${sensor.name}", "${url_for('admin.delete_sensor', sensor_id=sensor.id)}")' class="btn btn-danger btn-sm"><i class="fas fa-times" style="width: 16px;" aria-hidden="true"></i></button>
                     &nbsp;
                     <button type="button" id="edit_${sensor.id}" onClick='edit(${sensor.id})' class="btn btn-primary btn-sm"><i class="fas fa-pen" style="width: 16px;" aria-hidden="true"></i></button>
                 </td>

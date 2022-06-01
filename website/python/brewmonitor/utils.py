@@ -1,12 +1,11 @@
 from http import HTTPStatus
-from typing import Optional, Iterable, Tuple, List, Any
+from typing import Any, Iterable, List, Optional, Tuple
 
 import attr
+from brewmonitor import json
+from brewmonitor.storage.tables import Datapoint
 from flask import Response
 from flask_csv import send_csv
-
-from brewmonitor import json
-from brewmonitor.storage import access
 
 
 def json_response(
@@ -36,7 +35,7 @@ def make_csv(data: List[attr.s], filename: str) -> Response:
     return send_csv(entries, filename, headers)
 
 
-def export_data(filename: str, _format: str, data: List[access.DataPoints]) -> Response:
+def export_data(filename: str, _format: str, data: List[Datapoint]) -> Response:
 
     if _format == 'json':
         output = [attr.asdict(d) for d in data]

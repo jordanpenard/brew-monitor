@@ -1,72 +1,66 @@
-from typing import List, Dict, Optional, Tuple, AnyStr
+import dataclasses
+from typing import Dict, List, Tuple
 
+from brewmonitor.storage.tables import Datapoint, Sensor
 from flask import url_for
 
-from brewmonitor.storage import access
+
+# A dictionary that contains the Plotly trace fields.
+TraceDict = Dict
+
+
+@dataclasses.dataclass
+class SensorTraces:
+    name: str
+    traces: Dict[str, TraceDict] = dataclasses.field(default_factory=dict)
+
+    def add_trace(self, trace: str, yaxis: str):
+        self.traces[trace] = {
+            'x': [],
+            'y': [],
+            'name': f'{self.name} {trace}',
+            'type': 'scatter',
+            'yaxis': yaxis,
+        }
+
+    def add_point(self, trace: str, x: str, y: str):
+        self.traces[trace]['x'].append(x)
+        self.traces[trace]['y'].append(y)
 
 
 def build_view_data(
     elem_name: str,
-    data_points: List[access.DataPoints],
-    delete_next: Optional[str] = None,
+    data_points: List[Datapoint],
+    sensor_info: Dict[int, Sensor] = None,
+    delete_next: str = None,
 ) -> Tuple[List, Dict]:
-
     datatable = []
+    if sensor_info is None:
+        sensor_info = {}
 
-    def _new_sensor(sensor_name: str) -> List:
-        temperature_data = {
-            'x': [],
-            'y': [],
-            'name': f'{sensor_name} temperature',
-            'type': 'scatter',
-            'yaxis': 'y',
-        }
-        angle_data = {
-            'x': [],
-            'y': [],
-            'name': f'{sensor_name} angle',
-            'type': 'scatter',
-            'yaxis': 'y2',
-        }
-        battery_data = {
-            'x': [],
-            'y': [],
-            'name': f'{sensor_name} battery (V)',
-            'type': 'scatter',
-            'yaxis': 'y3',
-        }
-        return [temperature_data, angle_data, battery_data]
+    # Data by sensor.
+    sensor_data: Dict[str, SensorTraces] = {}
 
-    sensor_data = {}
-
+    # Plotly structure, ready to give to JS library.
     plot = {
         'data': [],
         'layout': {
             'autosize': True,
-            'title': f'{elem_name} data',
+            'title': f'{elem_name} data'.title(),
             'xaxis': {
                 'title': 'Date',
             },
             'yaxis': {
                 'title': 'Temperature (C)',
-                'overlaying': 'y3',
                 'side': 'left',
             },
             'yaxis2': {
                 'title': 'Angle (&deg;)',
-                'overlaying': 'y3',
+                'overlaying': 'y',
                 'side': 'right',
-            },
-            'yaxis3': {
-                'title': 'Battery (V)',
-                'visible': False,
             },
         },
     }
-
-    def _add(data: Dict, x: AnyStr, y: AnyStr):
-        data['x'].append(x)
-        data['y'].append(y)
 
     for entry in data_points:
         dt = entry.as_datatable()
@@ -74,15 +68,23 @@ def build_view_data(
             dt['delete_link'] = url_for('accessor.remove_datapoint', datapoint_id=entry.id, next=delete_next)
         datatable.append(dt)
 
-        if entry.sensor_id not in sensor_data:
-            # TODO(tr) Get the sensor's name
-            sensor_data[entry.sensor_id] = _new_sensor(f'sensor {entry.sensor_id}')
+        st = sensor_data.get(entry.sensor_id)
+        if st is None:
+            sensor = sensor_info.get(entry.sensor_id)
+            if sensor is None:
+                sensor_name = f'sensor {entry.sensor_id}'
+            else:
+                sensor_name = sensor.name
+            st = SensorTraces(sensor_name)
+            st.add_trace('temperature', 'y')
+            st.add_trace('angle', 'y2')
+            sensor_data[entry.sensor_id] = st
 
-        _add(sensor_data[entry.sensor_id][0], entry.timestamp_as_str(), entry.temperature_as_str())
-        _add(sensor_data[entry.sensor_id][1], entry.timestamp_as_str(), entry.angle_as_str())
-        _add(sensor_data[entry.sensor_id][2], entry.timestamp_as_str(), entry.battery_as_str())
+        when = entry.timestamp_as_str()
+        st.add_point('temperature', when, entry.temperature_as_str())
+        st.add_point('angle', when, entry.angle_as_str())
 
     for s in sorted(sensor_data.keys()):
-        plot['data'] += sensor_data[s]
+        plot['data'] += list(sensor_data[s].traces.values())
 
     return datatable, plot
