@@ -1,0 +1,28 @@
+{% extends 'master.html' %}
+{% block title %}Stock{% endblock title %}
+{% block content %}
+
+<script>
+  function stock_edit(pk) {
+     document.getElementById("quantity_g_"+pk).removeAttribute("hidden");
+     document.getElementById("save_"+pk).removeAttribute("hidden");
+     document.getElementById("l_quantity_g_"+pk).setAttribute("hidden", "hidden");
+     document.getElementById("edit_"+pk).setAttribute("hidden", "hidden");
+  }
+</script>
+
+<h1>Stock</h1>
+{% if user.is_authenticated %}
+    {% with ingredient_type='Grain' stock=grain_stock unused_ingredients=grain_unused_ingredients  %}
+        {% include 'stock_entry.html' %}
+    {% endwith %}
+    {% with ingredient_type='Hop' stock=hop_stock unused_ingredients=hop_unused_ingredients  %}
+        {% include 'stock_entry.html' %}
+    {% endwith %}
+    {% with ingredient_type='Yeast' stock=yeast_stock unused_ingredients=yeast_unused_ingredients  %}
+        {% include 'stock_entry.html' %}
+    {% endwith %}
+{% else %}
+    <div class="alert alert-danger" role="alert">You need to be logged in</div>
+{% endif %}
+{% endblock content %}

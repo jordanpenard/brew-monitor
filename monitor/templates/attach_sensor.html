@@ -1,0 +1,23 @@
+{% extends "master.html" %}
+
+{% block title %}Attach Sensor{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Attach Sensor to Project: {{ project.name }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="sensor" class="form-label">Select Sensor</label>
+            <select class="form-select" id="sensor" name="sensor_id">
+                <option value="">-- Detach Sensor --</option>
+                {% for sensor in sensors %}
+                <option value="{{ sensor.id }}" {% if sensor == project.active_sensor %}selected{% endif %}>{{ sensor.name }} (Owner: {{ sensor.owner.username }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Sensor</button>
+        <a href="{% url 'project_detail' project.id %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

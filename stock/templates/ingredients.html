@@ -1,0 +1,44 @@
+{% extends 'master.html' %}
+{% block title %}Ingredients{% endblock title %}
+{% block content %}
+<h1>Ingredients</h1>
+<h2>Grains</h2>
+<table class="table">
+    <thead><tr><th scope="col">Name</th><th scope="col">Color (°L)</th><th scope="col">PPG</th><th scope="col">DP</th><th scope="col"></th></tr></thead>
+    <tbody>
+        {% for entry in grain %}
+            <tr><td>{{entry.name}}</td><td>{{entry.color_lovibond}}</td><td>{{entry.ppg}}</td><td>{{entry.diastatic_power}}</td><td></td></tr>
+        {% endfor %}
+        {% if user.is_authenticated %}
+            {% include "add_grain_entry.html" %}
+        {% endif %}
+    </tbody>
+</table>
+
+<h2>Hop</h2>
+<table class="table">
+    <thead><tr><th scope="col">Name</th><th scope="col">AA (%)</th><th scope="col">Type</th><th scope="col"></th></tr></thead>
+    <tbody>
+        {% for entry in hop %}
+            <tr><td>{{entry.name}}</td><td>{{entry.alpha_acid}}</td><td>{% if entry.whole_not_pellet %}Whole{% else %}Pallet{% endif %}</td><td></td></tr>
+        {% endfor %}
+        {% if user.is_authenticated %}
+            {% include "add_hop_entry.html" %}
+        {% endif %}
+    </tbody>
+</table>
+
+<h2>Yeast</h2>
+<table class="table">
+    <thead><tr><th scope="col">Name</th><th scope="col">Type</th><th scope="col"></th></tr></thead>
+    <tbody>
+        {% for entry in yeast %}
+            <tr><td>{{entry.name}}</td><td>{% if entry.liquid_not_dry %}Liquid{% else %}Dry{% endif %}</td><td></td></tr>
+        {% endfor %}
+        {% if user.is_authenticated %}
+            {% include "add_yeast_entry.html" %}
+        {% endif %}
+    </tbody>
+</table>
+<br>
+{% endblock content %}

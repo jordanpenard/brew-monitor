@@ -1,13 +1,7 @@
-.DS_Store
-
-# Pycharm files
-.idea
-venv
-
-# Python compiled objects
+venv/
+logs/
+db.sqlite3
 __pycache__
-*.py[cod]
-.coverage
-
-# test database
-website/storage/
+core/secret.py
+static/
+.aider*
