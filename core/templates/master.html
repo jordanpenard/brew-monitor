@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Brew Monitor - {% block title %}{% endblock title %}</title>
+  {% load bootstrap5 %}
+  {% bootstrap_css %}
+  {% bootstrap_javascript %}
+  
+  {% load static %}
+
+  <!-- <link href="{% static 'ajax_datatable/css/style.css' %}" rel="stylesheet" /> -->
+  <link href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.css" rel="stylesheet" />
+
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.js" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://cdn.plot.ly/plotly-latest.min.js" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://kit.fontawesome.com/e53cf9fc84.js" crossorigin="anonymous"></script>
+
+  <script type="text/javascript" src="{% static 'ajax_datatable/js/utils.js' %}" crossorigin="anonymous"></script>
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.3.7/js/dataTables.js" crossorigin="anonymous"></script>
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.3.7/js/dataTables.bootstrap5.js" crossorigin="anonymous"></script>
+
+  <style>
+    html {
+        position: relative;
+        min-height: 100%;
+    }
+    body {
+        /* Margin bottom by footer height */
+        margin-bottom: 60px;
+    }
+    .footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        /* Set the fixed height of the footer here */
+        height: 60px;
+        line-height: 60px; /* Vertically center the text there */
+        background-color: #f5f5f5;
+    }
+    .nav-item.active {
+        text-decoration: underline;
+    }
+    #user_table tr td {
+        vertical-align: middle;
+    }
+    h1 {
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+    .fa-battery-full {
+        color: #28a745;
+        float: right;
+        margin: 5px 0px 0px 5px;
+    }
+    .fa-battery-three-quarters {
+        color: #28a745;
+        float: right;
+        margin: 5px 0px 0px 5px;
+    }
+    .fa-battery-half {
+        color: orange;
+        float: right;
+        margin: 5px 0px 0px 5px;
+    }
+    .fa-battery-quarter {
+        color: orange;
+        float: right;
+        margin: 5px 0px 0px 5px;
+    }
+    .fa-battery-empty {
+        color: red;
+        float: right;
+        margin: 5px 0px 0px 5px;
+    }
+    .fa-podcast {
+        color: #007bff;
+        float: right;
+        margin: 5px 0px 0px 5px;
+    }
+    .save_button {
+      height: 58px;
+      width: 58px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">Brew Monitor</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item {% if '/projects' in request.path %}active{% endif %}">
+          <a class="nav-link" href="/projects">Fermentation</a>
+        </li>
+        <li class="nav-item {% if '/sensors' in request.path %}active{% endif %}">
+          <a class="nav-link" href="/sensors">Sensors</a>
+        </li>
+        <li class="nav-item {% if '/ingredients' in request.path %}active{% endif %}">
+          <a class="nav-link" href="/ingredients">Ingredients</a>
+        </li>
+        <li class="nav-item {% if '/recipe' in request.path %}active{% endif %}">
+          <a class="nav-link" href="/recipe">Recipe</a>
+        </li>
+        <li class="nav-item {% if '/brew' in request.path %}active{% endif %}">
+          <a class="nav-link" href="/brew">Brew</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav navbar-right">
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true"><i class="fas fa-user" aria-hidden="true"></i> {{ user.username }}</a>
+          </li>
+          <li class="nav-item {% if '/stock' in request.path %}active{% endif %}">
+            <a class="nav-link" href="/stock">Stock</a>
+          </li>
+          {% if user.is_staff %}
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">Admin</a>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+            <a class="nav-link" href="/user/logout">Logout</a>
+          </li>
+        {% else %}
+          <li class="nav-item {% if '/user/login' in request.path %}active{% endif %}">
+            <a class="nav-link" href="/user/login">Login</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main role="main" class="container">
+  <br>
+  {% bootstrap_messages %}
+  {% block content %}
+  {% endblock content %}
+</main>
+
+<div class="footer">
+<footer class="footer">
+    <span class="text-muted" style="padding: 0px 1rem;">
+        See <a target="_blank" href="https://github.com/jordanpenard/brew-monitor">jordanpenard/brew-monitor</a> for licencing.
+    </span>
+</footer>
+</div>
+
+</body>
+</html>

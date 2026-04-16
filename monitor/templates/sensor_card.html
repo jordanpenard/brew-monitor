@@ -1,0 +1,30 @@
+<div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+    <div class="card">
+        <div class="card-header">
+            <div style="float: left;">
+                <a href="{% url 'sensor_detail' sensor.id %}">{{ sensor.name }}</a>
+            </div>
+            <div style="float: right;">
+                {% include "sensor_labels.html" with sensor=sensor %}
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="card-text">
+                Owner : {{ sensor.owner.username }}
+            </p>
+            {% if request.user.is_authenticated %}
+            <div class="mt-2">
+                <a href="{% url 'edit_sensor' sensor.id %}" class="btn btn-sm btn-primary me-1">Edit</a>
+                {% if sensor.active_project %}
+                <form action="{% url "attach_sensor_to_project" sensor.active_project.id %}{% if brew %}?brew={{brew.pk}}{% endif %}" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-danger" type="submit">
+                        <i class="fas fa-unlink"></i> Unlink sensor
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

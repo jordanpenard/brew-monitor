@@ -1,0 +1,49 @@
+{% extends 'master.html' %}
+{% block title %}Recipe{% endblock title %}
+{% block content %}
+
+<h1>Recipe</h1>
+
+    {% if request.user.is_authenticated %}
+    <form id="add_recipe_form" action="{% url 'add_recipe' %}" method="post" class="inline-form">
+        {% csrf_token %}
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">New recipe</span>
+            </div>
+            <input id="recipe_name" type="text" name="name" class="form-control" placeholder="Recipe name" maxlength="64" required/>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="submit">
+                    <i class="fas fa-plus-circle"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+    <br>
+    {% endif %}
+    
+    <table class="table">
+        <thead><tr><th scope="col">Recipe</th><th scope="col">Owner</th></tr></thead>
+        <tbody>
+            {% for recipe in recipes %}
+                <tr>
+                    <td style="padding-top: 14px;"><a href="{% url "edit_recipe" recipe.pk %}">{{ recipe.name }}</a>
+                        {% with stats=recipe.stats %}
+                        {% include 'beer_stats.html' %}
+                        {% endwith %}
+                    </td>
+                    <td style="padding-top: 14px;">{{ recipe.owner }}</td>
+                    {% if user.is_authenticated %}
+                        <td>
+                            <a class="btn btn-sm btn-primary" href="{% url "new_brew" recipe.pk %}">New brew</a>
+                        </td>
+                        <td>
+                            <a class="btn btn-sm btn-primary" href="{% url "clone_recipe" recipe.pk %}">Colone recipe</a>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+<br>
+{% endblock content %}

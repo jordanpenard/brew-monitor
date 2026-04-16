@@ -1,0 +1,42 @@
+{% extends "master.html" %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>
+        {{ project.name }}
+        <div style="float: right;">
+            {% include "project_labels.html" with project=project %}
+        </div>
+    </h1>
+
+    <h2>Linked sensor</h2>
+
+    <div class="row">
+        {% if project.active_sensor %}
+            {% include "sensor_card.html" with sensor=project.active_sensor %}
+        {% else %}
+            <div class="col-12">No linked elements.</div>
+        {% endif %}
+    </div>
+
+    {% if request.user.is_authenticated %}
+        {% include "link_sensor.html" with sensor=project.active_sensor project=project %}
+    {% endif %}
+
+    <h2>Data</h2>
+
+    <div class="row">
+        <div class="col-12">
+            {{ data_graph|safe }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mb-5">
+            {% include "datapoints_table.html" with project=project %}
+        </div>
+    </div>
+</div>
+{% endblock %}

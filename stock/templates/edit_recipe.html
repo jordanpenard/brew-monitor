@@ -1,0 +1,97 @@
+{% extends 'master.html' %}
+{% block title %}{{ recipe.name }}{% endblock title %}
+{% block content %}
+
+
+    <script>
+      function grain_recipe_edit(pk) {
+         document.getElementById("grain_edit_"+pk).removeAttribute("hidden");
+         document.getElementById("grain_recipe_"+pk).setAttribute("hidden", "hidden");
+      }
+      function hop_recipe_edit(pk) {
+         document.getElementById("hop_edit_"+pk).removeAttribute("hidden");
+         document.getElementById("hop_recipe_"+pk).setAttribute("hidden", "hidden");
+      }
+    </script>
+
+
+    <h3>
+        {% with stats=recipe.stats %}
+        {% include 'beer_stats.html' %}
+        {% endwith %}
+    </h3>
+    <br>
+
+    <form method="post" action="{% url "edit_recipe" recipe.pk %}" class="d-inline">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-12">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" name="name" id="name" placeholder="Recipe name" value="{{ recipe.name }}" {{disabled}}>
+                    <label for="name">Recipe name</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-4 col-xl-2">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" name="batch_size_l" id="batch_size_l" placeholder="Batch size (L)" value="{{ recipe.batch_size_l }}" {{disabled}}>
+                    <label for="batch_size_l">Batch size (L)</label>
+                </div>
+            </div>
+
+            <div class="col-8 col-xl-4 col-xxl-5">
+                <div class="form-floating mb-3">
+                    <select id="yeast" name="yeast" class="form-select" {{disabled}}>
+                        <option value="" selected disabled hidden></option>
+                      {% for yeast in all_yeast %}
+                        <option value="{{ yeast.pk }}"
+                                {% if yeast == recipe.yeast %} selected {% endif %}
+                        >{{ yeast }}</option>
+                      {% endfor %}
+                    </select>
+                    <label for="yeast">Yeast</label>
+                </div>
+            </div>
+
+            <div class="col-6 col-xl-3 col-xxl-2">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" name="mash_temperature_c" id="mash_temperature_c" placeholder="Mash temperature (°C)" value="{{ recipe.mash_temperature_c }}" {{disabled}}>
+                    <label for="mash_temperature_c">Mash temperature (°C)</label>
+                </div>
+            </div>
+
+            <div class="col-6 col-xl-3">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" name="fermentation_temperature_c" id="fermentation_temperature_c" placeholder="Fermentation temperature (°C)" value="{{ recipe.fermentation_temperature_c }}" {{disabled}}>
+                    <label for="fermentation_temperature_c">Fermentation temperature (°C)</label>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="form-floating mb-3">
+            <textarea class="form-control" placeholder="Comments" id="comments" name="comments" style="height: 100px" {{disabled}}>{{ recipe.comments }}</textarea>
+            <label for="comments">Comments</label>
+        </div>
+
+        {% if not read_only %}
+            <button type="submit" class="btn btn-primary me-3">Save</button>
+        {% endif %}
+    </form>
+    {% if user.is_authenticated and request.user == recipe.owner %}
+        <form action="{% url 'delete_recipe' recipe.pk %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger me-3" onclick="return confirm('Are you sure you want to delete this recipe?');">Delete</button>
+        </form>
+        <br>
+    {% endif %}
+    {% include 'grain_bill.html' %}
+    {% include 'hop_bill.html' %}
+{% if not read_only %}
+    {% include 'recipe_stock_checker.html' %}
+{% endif %}
+<br>
+{% endblock content %}

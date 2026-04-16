@@ -1,0 +1,24 @@
+<br>
+<h2>Stock check</h2>
+<table class="table" id="stock_check">
+    <thead>
+        <tr>
+            <th scope="col">Ingredient</th>
+            <th scope="col">Quantity needed (g)</th>
+            <th scope="col">Quantity in stock (g)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for data in stock_checker %}
+            {% if data.quantity_needed_g <= data.quantity_in_stock_g %}
+                <tr style="color: green;">
+            {% else %}
+                <tr style="color: red;">
+            {% endif %}
+                    <td>{{ data.name }}</td>
+                    <td>{{ data.quantity_needed_g }}</td>
+                    <td>{{ data.quantity_in_stock_g }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

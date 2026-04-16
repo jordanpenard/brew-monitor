@@ -1,0 +1,70 @@
+{% load django_template_maths %}
+<br>
+<h2>Grain bill</h2>
+<table class="table" id="grain_recipe">
+    <tbody>
+        {% for grain_recipe in grain_recipes %}
+            <tr id="grain_recipe_{{grain_recipe.pk}}">
+                <td><label style="margin-top: 5px;">{{ grain_recipe.grain }}</label></td>
+                <td><label style="margin-top: 5px;">{{ grain_recipe.quantity_g }}g ({{ grain_recipe.quantity_g | mul:100 | div:total_grain_bill_g | floatformat:1 }}%)</label></td>
+                <td>
+                    {% if not read_only %}
+                        <button type="button" onclick="grain_recipe_edit({{grain_recipe.pk}})" class="btn btn-primary">Edit</button>
+                    {% endif %}
+                </td>
+            </tr>
+
+            <tr hidden="hidden" id="grain_edit_{{grain_recipe.pk}}">
+                <form method="post" action="{% url "edit_grain" grain_recipe.pk %}">
+                    {% csrf_token %}
+                    <td>
+                        <div class="form-floating">
+                            <select name="grain" class="form-select" id="grain_{{grain_recipe.pk}}">
+                                {% for grain in all_grain %}
+                                    <option value="{{ grain.pk }}"
+                                        {% if grain.pk == grain_recipe.grain.pk %} selected {% endif %}
+                                    >{{ grain }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="grain_{{grain_recipe.pk}}">Grain</label>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="grain_quantity_g_{{grain_recipe.pk}}" name="quantity_g" value="{{ grain_recipe.quantity_g }}" placeholder="Quantity (g)">
+                            <label for="grain_quantity_g_{{grain_recipe.pk}}">Quantity (g)</label>
+                        </div>
+                    </td>
+                    <td class="align-middle">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </td>
+                </form>
+            </tr>
+        {% endfor %}
+        {% if not read_only %}
+            <form method="post" action="{% url "add_grain" recipe.pk %}">
+                {% csrf_token %}
+                <tr>
+                    <td>
+                        <div class="form-floating">
+                            <select id="grain" name="grain" class="form-select">
+                                    <option value="" selected disabled hidden></option>
+                                {% for grain in unused_grain %}
+                                    <option value="{{ grain.pk }}">{{ grain }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="grain">Grain</label>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="quantity_g" id="grain_quantity_g" placeholder="Quantity (g)">
+                            <label for="grain_quantity_g">Quantity (g)</label>
+                        </div>
+                    </td>
+                    <td class="align-middle"><button type="submit" class="btn btn-primary">Add</button></td>
+                </tr>
+            </form>
+        {% endif %}
+    </tbody>
+</table>

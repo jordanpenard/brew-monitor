@@ -1,0 +1,48 @@
+{% extends "master.html" %}
+
+{% block title %}Sensor List{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Sensors</h1>
+
+    {% if request.user.is_authenticated %}
+    <form id="add_sensor_form" action="{% url 'create_sensor' %}" method="post" class="inline-form">
+        {% csrf_token %}
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">New sensor</span>
+            </div>
+            <input id="sensor_name" type="text" name="name" class="form-control" placeholder="Sensor name" maxlength="64" required/>
+            <input id="sensor_secret" type="text" name="secret" class="form-control" placeholder="Sensor secret" maxlength="64" required/>
+            {# Note: create_sensor view expects owner_id, but the old form didn't have it. #}
+            {# In the new system, we might need a hidden field or the view needs to handle it. #}
+            <input type="hidden" name="owner" value="{{ user.id }}">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="submit">
+                    <i class="fas fa-plus-circle"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+    <br />
+    {% endif %}
+
+    <div class="row">
+        {% for sensor in sensors %}
+            {% include "sensor_card.html" with sensor=sensor %}
+        {% empty %}
+            <div class="col-12">No sensor.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    })
+</script>
+{% endblock %}
