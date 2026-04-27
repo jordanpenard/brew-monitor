@@ -1,0 +1,28 @@
+<div class="col-lg-3 col-md-4 col-sm-6 mb-3">    
+    <div class="card">
+        <div class="card-header">
+        <div style="float: left;">
+            <a href="{% url 'project_detail' project.id %}">{{ project.name }}</a>
+        </div><div style="float: right;">
+            {% include "project_labels.html" with project=project %}
+        </div>
+        </div>
+        <div class="card-body">
+        <p class="card-text">
+            Owner : {{ project.owner.username }}<br>
+            {% if project.last_temperature %}
+                Temperature : {{ project.last_temperature|floatformat:1 }}&deg;C<br>
+            {% endif %}
+            {% if project.first_angle and project.last_angle %}
+                &Delta;&Theta; : {{ project.delta_angle|floatformat:1 }}&deg;<br>
+            {% endif %}
+            {% if project.first_active and project.last_active %}
+                Length : {{ project.length_active }}<br>
+            {% endif %}
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'edit_project' project.id %}" class="btn btn-sm btn-primary mt-2">Edit</a>
+            {% endif %}
+        </p>
+        </div>
+    </div>
+</div>
