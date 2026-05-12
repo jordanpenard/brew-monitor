@@ -1,0 +1,412 @@
+{% extends 'master.html' %}
+{% block title %}{{ brew }}{% endblock title %}
+{% block content %}
+
+<style>
+    .brew_stats {
+        float: right;
+        margin-top: -50px;
+    }
+    @media (max-width: 1399.98px) {
+        .brew_stats {
+            float: right;
+            margin-top: 0px;
+        }
+        .brew_menu {
+            margin-top: 30px;
+        }
+    }
+    @media (max-width: 767.98px) {
+        .brew_menu {
+            margin-top: 60px;
+        }
+    }
+</style>
+
+<h1>{{ brew }}</h1>
+<h3 class="brew_stats">
+    {% with stats=brew.stats %}
+        {% include 'beer_stats.html' %}
+    {% endwith %}
+</h3>
+<br>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs brew_menu" id="brewTab" role="tablist">
+    {% with 'Prep Mash Boil Fermenting Completed' as steps %}
+        {% for tab_name in steps.split %}
+        <li class="nav-item" role="presentation">
+            <button id="{{tab_name}}-tab" data-bs-toggle="tab" data-bs-target="#{{tab_name}}" type="button" role="tab" aria-controls="{{tab_name}}" aria-selected="true"
+            {% if brew.state == tab_name %}
+              style="font-weight: bold;" class="nav-link active"
+            {% else %}
+              class="nav-link"
+            {% endif %}
+            >{{tab_name}}</button>
+        </li>
+        {% endfor %}
+    {% endwith %}
+    </ul>
+    <div class="tab-content" id="myTabContent">
+
+        <!-- Prep tab -->
+        <div class="tab-pane fade
+            {% if brew.state == "Prep" %}
+                show active
+            {% endif %}
+            " id="Prep" role="tabpanel" aria-labelledby="Prep-tab" tabindex="0">
+            <br>
+            {% if brew.state == "Prep" and not read_only %}
+                <a class="btn btn-success" href="{% url "next_state_brew" brew.pk %}">
+                    Move to Mash
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <br>
+            {% endif %}
+            <br>
+            <h5><ul>
+                <li>Recipe : <a href="{% url "edit_recipe" brew.recipe.id %}">{{brew.recipe.name}}</a>
+                    {% with stats=brew.recipe.stats %}
+                        {% include 'beer_stats.html' %}
+                    {% endwith %}
+                </li>
+                <li>Batch size : {{ brew.recipe.batch_size_l }}L</li>
+                <li>Yeast : {{ brew.recipe.yeast }}</li>
+                <li>Mash volume : {{ mash_volume_l }}L</li>
+                <li>Mash strike temperature : {{mash_strike_temperature_c}}°C</li>
+                <li>Sparge volume : {{ sparge_volume_l }}L</li>
+                <li>Sparge strike temperature : {{sparge_strike_temperature_c}}°C</li>
+            </ul></h5>
+            <br>
+            <form method="post" action="{% url "save_prep" brew.pk %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-12 col-lg-7">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="name" id="name" placeholder="Name" value="{{ brew.name }}" {{disabled}}>
+                            <label for="name">Name</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6 col-lg-2">
+                        <div class="form-floating mb-3">
+                            <input type="date" class="form-control" name="brew_date" id="brew_date" placeholder="Brew date" value="{{ brew.brew_date|date:"Y-m-d" }}" {{disabled}}>
+                            <label for="brew_date">Brew date</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="mash_out_temp_c" id="mash_out_temp_c" placeholder="Mash out temperature (°C)" value="{{ brew.mash_out_temp_c }}" {{disabled}}>
+                            <label for="mash_out_temp_c">Mash out temperature (°C)</label>
+                        </div>
+                    </div>
+                    <div class="col-5 col-lg-3 col-xxl-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="evaporation_lph" id="evaporation_lph" placeholder="Evaporation (L/h)" value="{{ brew.evaporation_lph }}" {{disabled}}>
+                            <label for="evaporation_lph">Evaporation (L/h)</label>
+                        </div>
+                    </div>
+                    <div class="col-5 col-lg-3 col-xxl-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="mash_thickness_lpkg" id="mash_thickness_lpkg" placeholder="Mash thickness (L/kg)" value="{{ brew.mash_thickness_lpkg }}" {{disabled}}>
+                            <label for="mash_thickness_lpkg">Mash thickness (L/kg)</label>
+                        </div>
+                    </div>
+                    {% if not read_only %}
+                    <div class="col-2 col-lg-1">
+                        <button type="submit" class="btn btn-primary save_button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+
+            {% if user.is_authenticated %}
+                {% include 'recipe_stock_checker.html' %}
+                {% if is_everything_in_stock == True and brew.ingredients_consumed == False %}
+                    <a class="btn btn-primary" href="{% url "consume_ingredients" brew.pk %}">Consume ingredients</a>
+                {% endif %}
+                {% if brew.ingredients_consumed == True %}
+                    All ingredients already consumed<br>
+                {% elif is_everything_in_stock == False %}
+                    Not all the ingredients are in stock<br>
+                {% endif %}
+            {% endif %}
+            <br><br>
+        </div>
+
+        <!-- Mash tab -->
+        <div class="tab-pane fade
+            {% if brew.state == "Mash" %}
+                show active
+            {% endif %}
+            " id="Mash" role="tabpanel" aria-labelledby="Mash-tab" tabindex="0">
+            <br>
+            {% if brew.state == "Mash" and not read_only %}
+                <a class="btn btn-warning" href="{% url "previous_state_brew" brew.pk %}">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Move to Prep
+                </a>
+                <a class="btn btn-success" href="{% url "next_state_brew" brew.pk %}">
+                    Move to Boil
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <br>
+            {% endif %}
+
+            {% with read_only=True %}
+                {% include 'grain_bill.html' %}
+            {% endwith %}
+            <br>
+            Mash volume : {{ mash_volume_l }}L<br>
+            Mash strike temperature : {{mash_strike_temperature_c}}°C<br>
+            Target mash temperature : {{brew.recipe.mash_temperature_c}}°C<br>
+            <br>
+            Sparge volume : {{ sparge_volume_l }}L<br>
+            Sparge strike temperature : {{sparge_strike_temperature_c}}°C<br>
+            Target mash out temperature : {{brew.mash_out_temp_c}}°C<br>
+            <br>
+            Target pre sparge volume : {{target_pre_sparge_volume_l}}L<br>
+            Target pre boil volume : {{target_pre_boil_volume_l}}L<br>
+            Target pre boil gravity : {{target_pre_boil_gravity}}<br>
+            <br>
+            {% if brew.measured_mash_ph < 5.2 or brew.measured_mash_ph > 5.6 %}
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+              <i class="fa-solid fa-triangle-exclamation"></i> &nbsp; Mash pH should be between 5.2 and 5.6
+            </div>
+            <br>
+            {% endif %}
+            <form method="post" action="{% url "save_mash" brew.pk %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-6 col-lg-3">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="measured_mash_temp_c" id="measured_mash_temp_c" placeholder="Mash temperature (°C)" value="{{ brew.measured_mash_temp_c }}" {{disabled}}>
+                            <label for="measured_mash_temp_c">Mash temperature (°C)</label>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md-3 col-lg-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="measured_mash_ph" id="measured_mash_ph" placeholder="Mash pH" value="{{ brew.measured_mash_ph }}" {{disabled}}>
+                            <label for="measured_mash_ph">Mash pH</label>
+                        </div>
+                    </div>
+                    {% if not read_only %}
+                    <div class="col-2">
+                        <button type="submit" class="btn btn-primary save_button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+            <br><br>
+        </div>
+
+        <!-- Boil tab -->
+        <div class="tab-pane fade
+            {% if brew.state == "Boil" %}
+                show active
+            {% endif %}
+            " id="Boil" role="tabpanel" aria-labelledby="Boil-tab" tabindex="0">
+            <br>
+            {% if brew.state == "Boil" and not read_only %}
+                <a class="btn btn-warning" href="{% url "previous_state_brew" brew.pk %}">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Move to Mash
+                </a>
+                <a class="btn btn-success" href="{% url "next_state_brew" brew.pk %}">
+                    Move to Fermenting
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <br>
+            {% endif %}
+
+            {% with read_only=True hop_recipes=boil_hop_recipes %}
+                {% include 'hop_bill.html' %}
+            {% endwith %}
+            <br>
+            Boil time : {{brew.recipe.boil_time_min}}min<br>
+            Target pre boil volume : {{target_pre_boil_volume_l}}L<br>
+            Target pre boil gravity : {{target_pre_boil_gravity}}<br>
+            <br>
+            Target volume : {{brew.recipe.batch_size_l}}L<br>
+            Estimated final volume : {{estimated_volume_l}}L<br>
+            Target original gravity : {{brew.recipe.stats.og}}<br>
+            Estimated original gravity : {{estimated_og}}<br>
+            <br>
+            Target fermentation temperature : {{brew.recipe.fermentation_temperature_c}}°C<br>
+            <br>
+            <form method="post" action="{% url "save_boil" brew.pk %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-6 col-lg-3 col-xxl-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="pre_boil_volume_l" id="pre_boil_volume_l" placeholder="Pre boil volume (L)" value="{{ brew.pre_boil_volume_l }}" {{disabled}}>
+                            <label for="pre_boil_volume_l">Pre boil volume (L)</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3 col-xxl-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="fermenter_volume_l" id="fermenter_volume_l" placeholder="End of boil volume (L)" value="{{ brew.fermenter_volume_l }}" {{disabled}}>
+                            <label for="fermenter_volume_l">End of boil volume (L)</label>
+                        </div>
+                    </div>
+                    <div class="col-5 col-lg-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="pre_boil_gravity" id="pre_boil_gravity" placeholder="Pre boil gravity" value="{{ brew.pre_boil_gravity }}" {{disabled}}>
+                            <label for="pre_boil_gravity">Pre boil gravity</label>
+                        </div>
+                    </div>
+                    <div class="col-5 col-lg-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="measured_og" id="measured_og" placeholder="Original gravity" value="{{ brew.measured_og }}" {{disabled}}>
+                            <label for="measured_og">Original gravity</label>
+                        </div>
+                    </div>
+                    {% if not read_only %}
+                    <div class="col-2">
+                        <button type="submit" class="btn btn-primary save_button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+            <br><br>
+        </div>
+
+        <!-- Fermenting tab -->
+        <div class="tab-pane fade
+            {% if brew.state == "Fermenting" %}
+                show active
+            {% endif %}
+            " id="Fermenting" role="tabpanel" aria-labelledby="Fermenting-tab" tabindex="0">
+            <br>
+            {% if brew.state == "Fermenting" and not read_only %}
+                <a class="btn btn-warning" href="{% url "previous_state_brew" brew.pk %}">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Move to Boil
+                </a>
+                <a class="btn btn-success" href="{% url "next_state_brew" brew.pk %}">
+                    Move to Completed
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <br>
+            {% endif %}
+            {% with read_only=True hop_recipes=dry_hop_recipes %}
+                {% include 'hop_bill.html' %}
+            {% endwith %}
+            {% if not read_only %}
+                <form action="{% url "create_monitor_project" brew.id %}" method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-primary mb-3" type="submit">Create new monitor project</button>
+                </form>
+            {% endif %}
+            <form method="post" action="{% url "save_fermenting" brew.pk %}">
+                <div class="row">
+                    {% csrf_token %}
+                    <div class="col-10">
+                        <div class="form-floating mb-3">
+                            <select id="monitor_project" name="monitor_project" class="form-select" {{disabled}}>
+                                <option value="" selected disabled hidden></option>
+                            {% for project in projects %}
+                                <option value="{{ project.pk }}"
+                                        {% if project == brew.monitor_project %} selected {% endif %}
+                                >{{ project }}</option>
+                            {% endfor %}
+                            </select>
+                            <label for="monitor_project">Brew monitor project</label>
+                        </div>
+                    </div>
+                    {% if not read_only %}
+                    <div class="col-2">
+                        <button type="submit" class="btn btn-primary save_button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+            {% if brew.monitor_project %}
+                <div class="row">         
+                    {% include "project_card.html" with project=brew.monitor_project %}
+                    {% if brew.monitor_project.active_sensor %}
+                        {% include "sensor_card.html" with sensor=brew.monitor_project.active_sensor brew=brew %}
+                    {% else %}
+                        {% if request.user.is_authenticated and not read_only %}
+                            <div class="col">    
+                                {% include "link_sensor.html" with sensor=available_sensors project=brew.monitor_project brew=brew %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Completed tab -->
+        <div class="tab-pane fade
+            {% if brew.state == "Completed" %}
+                show active
+            {% endif %}
+            " id="Completed" role="tabpanel" aria-labelledby="Completed-tab" tabindex="0">
+            <br>
+            {% if brew.state == "Completed" and not read_only %}
+                <a class="btn btn-warning" href="{% url "previous_state_brew" brew.pk %}">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Move to Fermenting
+                </a>
+                <br>
+            {% endif %}
+            <br>
+            <form method="post" action="{% url "save_completed" brew.pk %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-6 col-lg-3 col-xl-2">
+                        <div class="form-floating mb-3">
+                            <input type="date" class="form-control" name="bottling_date" id="bottling_date" placeholder="Bottling date" value="{{ brew.bottling_date|date:"Y-m-d" }}" {{disabled}}>
+                            <label for="bottling_date">Bottling date</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3 col-xl-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="measured_fg" id="measured_fg" placeholder="Final gravity" value="{{ brew.measured_fg }}" {{disabled}}>
+                            <label for="measured_fg">Final gravity</label>
+                        </div>
+                    </div>
+                    <div class="col-10 col-sm-8 col-md-6 col-lg-3 col-xl-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="bottling_volume_l" id="bottling_volume_l" placeholder="Bottling volume (L)" value="{{ brew.bottling_volume_l }}" {{disabled}}>
+                            <label for="bottling_volume_l">Bottling volume (L)</label>
+                        </div>
+                    </div>
+                    {% if not read_only %}
+                    <div class="col-2">
+                        <button type="submit" class="btn btn-primary save_button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+            {% if brew.monitor_project %}
+                <br><br>
+                <div class="row">         
+                    {% include "project_card.html" with project=brew.monitor_project %}
+                    {% if brew.monitor_project.active_sensor %}
+                        {% include "sensor_card.html" with sensor=brew.monitor_project.active_sensor brew=brew %}
+                    {% endif %}
+                </div>
+            {% endif %}
+            <br><br>
+        </div>
+    </div>
+
+{% endblock content %}

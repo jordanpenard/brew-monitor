@@ -1,0 +1,12 @@
+<form action="{% url "attach_sensor_to_project" project.id %}{% if brew %}?brew={{brew.pk}}{% endif %}" method="POST">
+    {% csrf_token %}
+    <select name="sensor_id" required>
+        <option value="" selected disabled>Choose new sensor</option>
+        {% for sensor in available_sensors %}
+            <option value="{{ sensor.id }}">{{ sensor.name }}</option>
+        {% endfor %}
+    </select>
+    <button class="btn btn-success" type="submit">
+        <i class="fas fa-link"></i> Link selected sensor
+    </button>
+</form>

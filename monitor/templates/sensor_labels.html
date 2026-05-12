@@ -1,0 +1,11 @@
+{% if sensor.active_project %}
+    <span style="vertical-align: middle;" class="badge bg-success" title="Project id {{ sensor.active_project.id }}">
+        <i aria-hidden="true" class="fas fa-link"></i>
+    </span>
+{% endif %}
+{% if sensor.is_active %}
+    <i aria-hidden="true" class="fas fa-podcast" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ sensor.last_active_str }}"></i>
+{% endif %}
+{% with battery=sensor.battery_info %}
+    <i class="fas {{ battery.icon }}" aria-hidden="true" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ battery.tooltip }}"></i>
+{% endwith %}

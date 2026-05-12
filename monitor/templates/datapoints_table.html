@@ -1,0 +1,36 @@
+<div class="table-responsive">
+    <table id="datatable" width="100%" class="table table-striped table-bordered dt-responsive compact nowrap">
+    </table>
+</div>
+
+<script language="javascript">
+
+    dom = "<'row mb-3'<'col'l>>" +
+        "<'row'<'col'tr>>" +
+        "<'row'<'col'i>>" +
+        "<'row'<'col d-flex justify-content-center'p>>";
+
+    $(document).ready(function() {
+        AjaxDatatableViewUtils.initialize_table(
+            $('#datatable'),
+            "{% url 'ajax_datatable' %}",
+            {
+                // extra_options (example)
+                processing: true,
+                autoWidth: true,
+                scrollX: false,
+                searching: false,
+                dom: dom
+            }, {
+                // extra_data
+                {% if project %}
+                project_id: '{{project.id}}',
+                {% endif %}
+                {% if sensor %}
+                sensor_id: '{{sensor.id}}',
+                {% endif %}
+            }
+        );
+    });
+
+</script>

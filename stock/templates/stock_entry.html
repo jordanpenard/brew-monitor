@@ -1,0 +1,45 @@
+<h2>{{ingredient_type}}</h2>
+<table class="table">
+    <thead><tr><th scope="col">Ingredient</th><th scope="col">Quantity (grams)</th><th scope="col"></th></tr></thead>
+    <tbody>
+        {% for entry in stock %}
+            <tr>
+                <form id="stock_{{entry.pk}}" method="post" action="{% url "edit_stock" %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="pk" value="{{entry.pk}}">
+                    <td>
+                        <label style="margin-top: 5px;">{{entry.ingredient}}</label>
+                    </td>
+                    <td>
+                        <label id="l_quantity_g_{{entry.pk}}" style="margin-top: 5px;">{{entry.quantity_g}}</label>
+                        <input hidden="hidden" type="text" class="form-control" id="quantity_g_{{entry.pk}}" name="quantity_g" value="{{entry.quantity_g}}">
+                    </td>
+                    <td>
+                        <button type="button" id="edit_{{entry.pk}}" onClick="stock_edit({{entry.pk}})" class="btn btn-primary">Edit</button>
+                        <button hidden="hidden" id="save_{{entry.pk}}" type="submit" class="btn btn-primary">Save</button>
+                    </td>
+                </form>
+                <td>
+                    <form action="{% url 'delete_stock_entry' entry.pk %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this stock entry?');">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        <form method="post" action="{% url "add_stock" %}">
+          {% csrf_token %}
+          <tr>
+            <td><select id="ingredient" name="ingredient" class="form-select">
+                <option value="" selected disabled hidden></option>
+              {% for ingredient in unused_ingredients %}
+                <option value="{{ ingredient.pk }}">{{ ingredient }}</option>
+              {% endfor %}
+            </select></td>
+            <td><input type="text" class="form-control" id="quantity_g" name="quantity_g"></td>
+            <td><button type="submit" class="btn btn-primary">Add</button></td>
+          </tr>
+        </form>
+    </tbody>
+</table>
+<br>

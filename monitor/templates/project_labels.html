@@ -1,0 +1,14 @@
+{% if project.active_sensor %}
+    <span style="vertical-align: middle;" class="badge bg-success" title="Sensor id {{ project.active_sensor.id }}">
+        <i aria-hidden="true" class="fas fa-link"></i>
+    </span>
+{% endif %}
+{% if project.is_active %}
+    <span style="vertical-align: middle;" class="badge bg-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ project.last_active_str }}">
+        Active
+    </span>
+{% else %}
+    <span style="vertical-align: middle;" class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ project.last_active_str }}">
+        Inactive
+    </span>
+{% endif %}

@@ -1,0 +1,38 @@
+{% extends "master.html" %}
+
+{% block title %}Create Sensor{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Create New Sensor</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="name" class="form-label">Sensor Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="secret" class="form-label">Secret</label>
+            <input type="text" class="form-control" id="secret" name="secret" required>
+        </div>
+        <div class="mb-3">
+            <label for="owner" class="form-label">Owner</label>
+            <select class="form-select" id="owner" name="owner" required>
+                {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="min_battery" class="form-label">Min Battery (Volts)</label>
+            <input type="number" step="0.01" class="form-control" id="min_battery" name="min_battery" value="2.0">
+        </div>
+        <div class="mb-3">
+            <label for="max_battery" class="form-label">Max Battery (Volts)</label>
+            <input type="number" step="0.01" class="form-control" id="max_battery" name="max_battery" value="4.0">
+        </div>
+        <button type="submit" class="btn btn-primary">Create Sensor</button>
+        <a href="{% url 'admin_sensors' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

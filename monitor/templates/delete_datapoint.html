@@ -1,0 +1,6 @@
+<form action="{% url "delete_datapoint" id %}?{% if project %}project={{project}}{% else %}sensor={{sensor}}{% endif %}" method="POST">
+    {% csrf_token %}
+    <button type='submit' class='btn btn-sm btn-danger' onclick="return confirm('Are you sure you want to delete this sensor?');">
+        <i class='fas fa-times'></i>
+    </button>
+</form>

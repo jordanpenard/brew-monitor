@@ -1,0 +1,35 @@
+{% extends "master.html" %}
+
+{% block title %}Brew Monitor - Project List{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Fermentation</h1>
+
+    {% if request.user.is_authenticated %}
+    <form id="add_project_form" action="{% url 'create_project' %}" method="post" class="inline-form">
+        {% csrf_token %}
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">New project</span>
+            </div>
+            <input id="project_name" type="text" name="name" class="form-control" placeholder="Project name" maxlength="64" required/>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="submit">
+                    <i class="fas fa-plus-circle"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+    <br>
+    {% endif %}
+
+    <div class="row">
+        {% for project in projects %}            
+            {% include "project_card.html" with project=project %}
+        {% empty %}
+            <div class="col-12">No project.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

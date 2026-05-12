@@ -1,0 +1,26 @@
+{% extends "master.html" %}
+
+{% block title %}Create Project{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Create New Project</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="name" class="form-label">Project Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="owner" class="form-label">Owner</label>
+            <select class="form-select" id="owner" name="owner" required>
+                {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Project</button>
+        <a href="{% url 'admin_projects' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

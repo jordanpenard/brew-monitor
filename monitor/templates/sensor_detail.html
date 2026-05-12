@@ -1,0 +1,57 @@
+{% extends "master.html" %}
+
+{% block title %}{{ sensor.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>
+        {{ sensor.name }}
+        <div style="float: right;">
+            {% include "sensor_labels.html" with sensor=sensor %}
+        </div>
+    </h1>
+
+    <h2>Linked projects</h2>
+        {% if sensor.active_project %}
+            <div class="row">         
+                {% include "project_card.html" with project=sensor.active_project %}
+                {% if request.user.is_authenticated %}
+                    <div class="col-6">
+                        <form action="{% url "attach_sensor_to_project" sensor.active_project.id %}" method="POST">
+                            {% csrf_token %}
+                            <button class="btn btn-danger" type="submit">
+                                <i class="fas fa-unlink"></i> Unlink project
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="col-12">No project.</div>
+        {% endif %}
+        
+    <h2>Previously linked projects</h2>
+    <div class="row">
+    {% for project in previous_projects %}            
+        {% include "project_card.html" with project=project %}
+    {% empty %}
+        <div class="col-12">No project.</div>
+    {% endfor %}
+    </div>
+    
+    <h2>Data</h2>
+
+    <div class="row">
+        <div class="col-12">
+            {{ data_graph|safe }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {% include "datapoints_table.html" with sensor=sensor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

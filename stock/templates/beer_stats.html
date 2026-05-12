@@ -1,0 +1,15 @@
+<i class="fa-solid {{ stats.state }}"></i>
+
+<span class="badge rounded-pill bg-primary">OG : {{stats.og}}</span>
+<span class="badge rounded-pill bg-info text-dark">FG : {{stats.fg}}</span>
+<span class="badge rounded-pill bg-secondary">{{stats.abv}}%</span>
+<span class="badge rounded-pill bg-warning text-dark">IBU : {{stats.ibu}}</span>
+{% if stats.diastatic_power > "30" %}
+    <span class="badge rounded-pill bg-success">DP : {{stats.diastatic_power}}</span>
+{% else %}
+    <span class="badge rounded-pill bg-danger">DP : {{stats.diastatic_power}}</span>
+{% endif %}
+{% if stats.nb_brew %}
+    <span class="badge rounded-pill bg-light text-dark">Brewed {{stats.nb_brew}} times</span>
+{% endif %}
+<i class="fas fa-beer" style="color: {{stats.color_rgb}}; vertical-align: middle; font-size: 130%;" title="Color : {{stats.color_l}}°L"></i>
